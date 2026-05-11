@@ -1,0 +1,134 @@
+CLASS sensorReadings
+
+    sensorID (String)
+    sensorType (String)
+    zone (String)
+    value (double)
+    timestamp (Timestamp object) 
+
+    //default constructor
+    PUBLIC METHOD SensorReadings()
+        sensorID EQUALS NULL
+        sensorType EQUALS NULL
+        zone EQUALS NULL
+        value EQUALS DOUBLE: ZERO
+        timestamp EQUAlS new METHOD Timestamp()
+    END METHOD
+
+    //constructor with parameters
+    PUBLIC METHOD SensorReadings WITH PARAMATERS:
+        sensorID AS STRING,
+        sensorType AS STRING,
+        zone AS STRING,
+        value AS DOUBLE,
+        timestamp AS Timestamp()
+    END PARAMATERS -> START METHOD LOGIC
+        this.sensorID EQUALS sensorID
+        this.sensorType EQUALS sensorType
+        this.zone EQUALS zone
+        this.value EQUALS value
+        this.timestamp EQUALS timestamp
+    END METHOD
+        
+    //?
+    PUBLIC METHOD SensorReadings WITH PARAMETERS (DATATYPE: SensorReading SET TO "other")
+        this.sensorID EQUALS other.sensorID
+        this.sensorType EQUALS other.sensorType
+        this.zone EQUALS other.zone
+        this.value EQUALS other.value
+        this.timestamp EQUALS new Timestamp(other.timestamp)
+    END METHOD
+
+    //--- ACCESSORS ---
+
+    ACCESSOR: getSensorID()
+    IMPORT:
+    EXPORT: sensorID
+    ASSERTION: get sensorID
+    ALGORITHM: RETURN sensorID
+
+    ACCESSOR: getSensorType()
+    IMPORT:
+    EXPORT: sensorType
+    ASSERTION: get sensorType
+    ALGORITHM: RETURN sensorType
+
+    ACCESSOR: getZone()
+    IMPORT:
+    EXPORT: zone
+    ASSERTION: get zone
+    ALGORITHM: RETURN zone
+
+    ACCESSOR: getValue()
+    IMPORT:
+    EXPORT: value
+    ASSERTION: get value
+    ALGORITHM: RETURN value
+
+    ACCESSOR: getTimestamp()
+    IMPORT:
+    EXPORT: Timestamp
+    ASSERTION: get Timestamp
+    ALGORITHM: RETURN Timestamp
+
+    //--- MUTATORS ---
+
+    MUTATOR: setSensorID()
+    Import: sensorID (STRING)
+    Export: 
+    ASSERTION: Converts sensorID (String) into this.sensorID
+    ALGORITHM: this.SensorID EQUALS sensorID
+
+    MUTATOR: setSensorType()
+    Import: sensorType (STRING)
+    Export:
+    ASSERTION: Converts sensorType into this.sensorType
+    ALGORITHM: this.sensorType EQUALS sensorType
+
+    MUTATOR: setZone()
+    Import: zone (String)
+    Export:
+    ASSERTION: Converts zone into this.zone
+    ALGORITHM: this.zone EQUALS zone
+
+    MUTATOR: setValue()
+    Import: value (double)
+    Export:
+    ASSERTION: Converts value into this.value
+    ALGORITHM: this.value EQUALS value
+
+    MUTATOR: setTimestamp()
+    Import: timestamp (DATATYPE: Timestamp)
+    Export:
+    ASSERTION: Converts timestmap into this.timestamp
+    ALGORITHM: this.timestamp EQUALS timestamp
+
+    //--- SUBMODULE VALIDATION ---
+
+    PUBLIC STATIC METHOD getSafeRange WITH PARAMETERS (STRING sensorType) AS DATATYPE DOUBLE ARRAY
+        IF sensorType EQUALS "tempurature"               //syntax -> sensorType.equals("tempurature")
+            RETURN NEW DOUBLE ARRAY WITH 18.0, 30.0
+        END IF
+        IF sensorType EQUALS "humidity"
+            RETURN NEW DOUBLE ARRAY WITH 40.0, 70.0
+        END IF
+        IF sensorType EQUALS "soilMoisture"
+            RETURN NEW DOBULE ARRAY WITH 30.0, 60.0
+        END IF
+        IF sensorType EQUALS "light"
+            RETURN NEW DOUBLE ARRAY WITH 300.0, 1200.0
+        END IF
+        RETURN NOTHING
+    END METHOD
+
+    PUBLIC METHOD outOfSafeRange() AS DATATYPE BOOLEAN
+        range EQUALS getSafeRange WITH PARAMETERS (sensorType) AS DATATYPE DOUBLE ARRAY
+        IF range EQUALS NULL THEN RETURN FALSE
+        RETURN value IS LESS THAN INDEX ZERO OF ARRAY OR value IS GREATER THAN INDEX ONE OF ARRAY
+    END METHOD
+
+    PUBLIC METHOD toString AS DATATYPE String   
+        RETURN WITH PARAMETERS ("[" PLUS timestamp.toString() PLUS "]" PLUS sensorID PLUS "(" PLUS sensorType PLUS "," PLUS zone PLUS "):" PLUS value)
+    END METHOD
+    
+END sensorReadings CLASS

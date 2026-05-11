@@ -1,0 +1,60 @@
+
+
+IMPORT java.io.BufferedWRiter, FileWriter, IOException
+
+
+
+BEGIN PUBLIC CLASS Logger
+
+    DECLARE PRIVATE FINAL STRING LOG_FILE = "logged_data"
+    DECLARE PRIVATE STATIC DATATYPE: "BufferedWRiter" AS "writer" SET TO NULL    //syntax -> "private static BufferedWriter writer = null;"
+
+    PUBLIC STATIC METHOD "open()" RETURN VOID
+    TRY
+        writer EQUALS NEW BufferedWriter 
+            WITH PARAMETERS FileWriter 
+                WITH PARAMETERS LOG_FILE AND WHILE TRUE.                          //syntax -> writer = new BufferedWriter(new FileWriter(LOG_FILE, true))
+        writer APPEND "write" WITH PARAMETERS "STARTING SESSION..."
+        CALL writer APPEND newLine METHOD
+        CALL writer APPEND flush METHOD
+    END TRY -> CATCH
+        PRINT "could not open log file..."
+        //set writer to null?
+    END CATCH
+
+
+
+    //VERY IMPORTANT, THIS IS CALLED EVERY TIME log() method is called to LOG "message"
+
+    PUBLIC STATIC METHOD "log" WITH PARAMETERS (STRING message)
+        PRINT message
+        IF writer DOES NOT EQUAL null  
+            TRY 
+                CALL writer APPEND "write" WITH PARAMETERS "message"
+                CALL writer APPEND newLine METHOD
+                CALL writer APPEND flush METHOD
+            END TRY -> CATCH    
+                IOException
+            END CATCH
+        END IF
+    END log METHOD
+
+
+
+
+    
+
+    PUBLIC STATIC METHOD "close()" RETURN VOID
+        IF writer DOES NOT EQUAL null  
+            TRY
+                writer APPEND "write" WITH PARAMETERS "ENDING SESSION..."
+                CALL writer APPEND newLine METHOD
+                CALL writer APPEND newLine METHOD                                  //x2 done twice
+                CALL writer APPEND flush METHOD
+                CALL writer APPEND close METHOD
+            END TRY -> CATCH    
+                IOException
+            END CATCH
+        END IF
+    END close METHOD
+END CLASS LOGGER

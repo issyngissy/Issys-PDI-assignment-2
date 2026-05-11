@@ -1,0 +1,23 @@
+BEGIN PUBLIC CLASS MAIN
+
+    DECLARE PRIVATE FINAL STRING: CSV_FILE = "data.csv"
+
+    PUBLIC STATIC VOID MAIN
+        OPEN LOGGER                            //syntax -> "Logger.open()"
+
+        DATATYPE: SensorArray, 
+            SET TO: readings, 
+            EQUALS: FileManager 
+            CALLING METHOD: loadCSV            //syntax -> "FileManager.loadCSV(CSV_FILE)"
+                WITH PARAMETERS: CSV_FILE
+
+        LOG DATA                               //syntax -> Logger.log
+
+        DATATYPE: Menu
+            SET TO: menu
+            EQUALS: new Menu
+                WITH PARAMETERS: readings
+
+        CLOSE LOGGER                           //syntax -> "Logger.close()"
+    END
+END MAIN

@@ -1,0 +1,267 @@
+BEGIN Menu
+
+    CONSTRUCTOR Menu() WITH PARAMETERS readings
+        this.readings = readings
+        this.inputReader = OPEN standard input for reading
+    END CONSTRUCTOR
+
+
+    run()
+        running = TRUE
+
+        WHILE running EQUALS TRUE
+
+            PRINT blank line
+            PRINT separator
+            PRINT "Welcome to the Smart Greenhouse Monitoring System."
+            PRINT "Please select an option:"
+            PRINT "1. Statistics for the entire greenhouse"
+            PRINT "2. Statistics by zone"
+            PRINT "3. Statistics by sensor type"
+            PRINT "4. Add data readings"
+            PRINT "5. Delete data readings"
+            PRINT "6. Exit program"
+            PRINT separator
+
+            choice = CALL readInt("Enter choice: ", min=1, max=6)
+
+            SWITCH choice
+                CASE 1: 
+                    CALL handleOverallStats()
+                CASE 2: 
+                    CALL handleStatsByZone()
+                CASE 3: 
+                    CALL handleStatsByType()
+                CASE 4: 
+                    CALL handleAddReading()
+                CASE 5: 
+                    CALL handleDeleteReading()
+                CASE 6: running = FALSE
+            END SWITCH
+
+        END WHILE
+
+        PRINT "Goodbye!"
+    END run()
+
+
+    handleOverallStats()
+        PRINT blank line
+        PRINT "=== Entire Greenhouse ==="
+        CALL showStatsSubMenu(readings, context="Entire Greenhouse")
+    END handleOverallStats()
+
+
+    handleStatsByZone()
+        zones = CALL readings.getDistinctZones()
+
+        IF zones.length EQUALS 0 THEN
+            PRINT "No readings available."
+            RETURN
+        END IF
+
+        PRINT blank line
+        PRINT "Available zones:"
+        FOR i = 0 TO zones.length - 1
+            PRINT (i + 1) + ". " + zones[i]
+        END FOR
+
+        choice = CALL readInt("Select zone: ", min=1, max=zones.length)
+        zone = zones[choice - 1]
+        filtered = CALL readings.filterByZone(zone)
+
+        PRINT blank line
+        PRINT "=== Zone: " + zone + " ==="
+        CALL showStatsSubMenu(filtered, context="Zone: " + zone)
+    END handleStatsByZone()
+
+
+    handleStatsByType()
+        types = CALL readings.getDistinctTypes()
+
+        IF types.length EQUALS 0 THEN
+            PRINT "No readings available."
+            RETURN
+        END IF
+
+        PRINT blank line
+        PRINT "Available sensor types:"
+        FOR i = 0 TO types.length - 1
+            PRINT (i + 1) + ". " + types[i]
+        END FOR
+
+        choice = CALL readInt("Select sensor type: ", min=1, max=types.length)
+        type = types[choice - 1]
+        filtered = CALL readings.filterBySensorType(type)
+
+        PRINT blank line
+        PRINT "=== Sensor Type: " + type + " ==="
+        CALL showStatsSubMenu(filtered, context="Sensor Type: " + type)
+    END handleStatsByType()
+
+
+    showStatsSubMenu() WITH PARAMETERS slice, context
+        PRINT blank line
+        PRINT "Select a statistic:"
+        PRINT "1.Total number of readings"
+        PRINT "2.Average value"
+        PRINT "3.Minimum value"
+        PRINT "4.Maximum value"
+        PRINT "5.Number of readings outside safe range"
+        PRINT "6.Percentage of readings outside safe range"
+        PRINT "7.All statistics"
+
+        choice = CALL readInt("Enter choice: ", min=1, max=7)
+        PRINT blank line
+
+        SWITCH choice
+            CASE 1: 
+                PRINT "Total readings [" + context + "]: " + slice.totalReadings()
+            CASE 2: 
+                PRINT "Average value [" + context + "]: " + slice.average()
+            CASE 3: 
+                PRINT "Minimum value [" + context + "]: " + slice.minimum()
+            CASE 4: 
+                PRINT "Maximum value [" + context + "]: " + slice.maximum()
+            CASE 5: 
+                PRINT "Readings outside safe range [" + context + "]: " + slice.outOfRangeCount()
+            CASE 6: 
+                PRINT "Percentage outside safe range [" + context + "]: " + slice.outOfRangePercent() + "%"
+            CASE 7: 
+                CALL displayAllStats(slice, context)
+        END SWITCH
+    END showStatsSubMenu()
+
+
+    displayAllStats() WITH PARAMETERS slice, context
+        PRINT "All statistics [" + context + "]:"
+        PRINT "Total readings: " + slice.totalReadings()
+        PRINT "Average value: " + slice.average()
+        PRINT "Minimum value: " + slice.minimum()
+        PRINT "Maximum value: " + slice.maximum()
+        PRINT "Outside safe range (count): " + slice.outOfRangeCount()
+        PRINT "Outside safe range (percent): " + slice.outOfRangePercent() + "%"
+    END displayAllStats()
+
+
+    handleAddReading()
+        PRINT blank line
+        PRINT "=== Add New Reading ==="
+
+        sensorID = ""
+        WHILE sensorID is NOT valid
+            sensorID = CALL readLine("Enter sensor ID (e.g. TMP332): ")
+            IF sensorID is NOT valid THEN
+                PRINT "Invalid sensor ID. Must not be empty."
+            END IF
+        END WHILE
+
+        sensorType = ""
+        WHILE sensorType is NOT valid
+            PRINT "Sensor types: temperature, humidity, soilMoisture, light"
+            sensorType = CALL readLine("Enter sensor type: ")
+            IF sensorType is NOT valid THEN
+                PRINT "Invalid sensor type."
+            END IF
+        END WHILE
+
+        zone = ""
+        WHILE zone is NOT valid
+            zone = CALL readLine("Enter zone (e.g. ZoneA): ")
+            IF zone is NOT valid THEN
+                PRINT "Invalid zone. Must not be empty."
+            END IF
+        END WHILE
+
+        validValue = FALSE
+        WHILE validValue EQUALS FALSE
+            input = CALL readLine("Enter sensor value: ")
+            IF input is numeric THEN
+                value = PARSE input TO DOUBLE
+                validValue = TRUE
+            ELSE
+                PRINT "Invalid value. Must be a number."
+            END IF
+        END WHILE
+
+        day = CALL readInt("Enter day (1-31): ",min=1,max=31)
+        month = CALL readInt("Enter month (1-12): ",min=1,max=12)
+        year = CALL readInt("Enter year (2000-2100): ",min=2000,max=2100)
+        hour = CALL readInt("Enter hour (0-23): ",min=0,max=23)
+        minute = CALL readInt("Enter minute (0-59): ",min=0,max=59)
+
+        ts = NEW Timestamp(day, month, year, hour, minute)
+        newReading = NEW SensorReading(sensorID, sensorType, zone, value, ts)
+        CALL readings.add(newReading)
+
+        PRINT "Reading added: " + newReading.toString()
+        CALL FileManager.saveCSV(CSV_FILE, readings)
+        PRINT "Data saved to " + CSV_FILE
+    END handleAddReading()
+
+
+    handleDeleteReading()
+        PRINT blank line
+        PRINT "=== Delete a Reading ==="
+
+        IF readings.getCount() EQUALS 0 THEN
+            PRINT "No readings to delete."
+            RETURN
+        END IF
+
+        PRINT "Current readings:"
+        FOR i = 0 TO readings.getCount() - 1
+            PRINT (i + 1) + ". " + readings.get(i).toString()
+        END FOR
+
+        choice = CALL readInt("Enter number to delete (0 to cancel): ", min=0, max=readings.getCount())
+
+        IF choice EQUALS 0 THEN
+            PRINT "Delete cancelled."
+            RETURN
+        END IF
+
+        deleted = readings.get(choice - 1)
+        CALL readings.deleteAt(choice - 1)
+        PRINT "Deleted: " + deleted.toString()
+
+        CALL FileManager.saveCSV(CSV_FILE, readings)
+        PRINT "Data saved to " + CSV_FILE
+    END handleDeleteReading()
+
+
+    readLine() WITH PARAMETERS prompt          // PRIVATE
+        WHILE TRUE
+            PRINT prompt (no newline)
+            TRY
+                line = READ LINE FROM inputReader
+                IF line is not NULL AND line is not empty THEN
+                    RETURN line
+                END IF
+            CATCH IOException
+                // swallow and retry
+            END TRY
+            PRINT "Input error. Please try again."
+        END WHILE
+    END readLine()
+
+
+    readInt() WITH PARAMETERS prompt, min, max  // PRIVATE
+        WHILE TRUE
+            PRINT prompt (no newline)
+            TRY
+                line = READ LINE FROM inputReader
+                IF line is not NULL AND line is a valid integer THEN
+                    val = PARSE line TO INTEGER
+                    IF val >= min AND val <= max THEN
+                        RETURN val
+                    END IF
+                END IF
+            CATCH IOException
+                // swallow and retry
+            END TRY
+            PRINT "Invalid input. Please enter a number between " + min + " and " + max
+        END WHILE
+    END readInt()
+
+END Menu

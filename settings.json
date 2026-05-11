@@ -1,0 +1,10 @@
+"highlight.regexes": {
+    "(TODO:?)": {
+        "color": "#000",
+        "backgroundColor": "yellow"
+    },
+    "(!.*)": {
+        "color": "#fff",
+        "backgroundColor": "red"
+    }
+}

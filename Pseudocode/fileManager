@@ -1,0 +1,147 @@
+//use log and go through and read CSV
+
+BEGIN FileManager
+    readings = NEW SonsorArray
+
+    TRY
+        reader = OPEN FILE filename FOR reading
+        line = READ LINE FROM reader                //skip header row
+        lineNumber = 1
+
+        WHILE READ LINE FROM reader DOES NOT EQUAL NULL
+            lineNumber - lineNumber + 1
+            line = TRIM whitespace from line
+            
+            IF line is empty THEN
+                CONTINUE to next iteration
+            END IF
+
+            reading = CALL parseLine(line)
+
+            IF reading ODES NOT EQUAL NULL THEN
+                CALL readings.add(reading)
+            ELSE 
+                PRINT "Warning: skipped invalid row " + lineNumber + ": " + line
+            END IF
+        END WHILE
+
+    CATCH IOException
+        Print "Error loading file " + filename + ": " + error message
+
+    FINALLY 
+        IF reader is not NULL THEN
+            CLOSE reader 
+        IND IF
+    END TRY
+
+    RETURN readings
+END loadCSV()
+
+
+saveCSV() WITH PARAMETERS filename, arr
+    TRY
+        writer = OPEN FILE filename FOR WRITING (overwrite mode)
+        WRITE = "day,month,year,hour,minute,sensorID,sensorType,zone,value" TO writer
+        WRITE = newline TO writer
+
+        FOR i = 0 TO arr.getCount() -1
+        r = arr.get(i)
+        ts = r.getTimestamp()
+
+        row =   ts.getDayOfMonth() + "," +
+                ts.getMonthOfYear() + "," +
+                ts.getYear() + "," + 
+                ts.getMinute() + "," + 
+                r.getSensorID() + "," +
+                r.getSensorType() + "," +
+                r.getZone() + "," + 
+                r.getValue()
+
+            WRITE row TO writer
+            WRITE newline to writer
+        END FOR
+
+        FLUSH writer
+
+    CATCH IOException
+        PRINT "Error saving file " + fliename + ": " + error message
+
+    FINALLY 
+        IF writer is not NULL THEN 
+            CLOSE writer
+        END IF
+    END TRY
+END saveCSV()
+
+parseLine() WITH PARAMETERS         //PRIVATE
+    tokens = CALL splitCSV(line)
+
+    IF tokens is NULL OR toens.length DOES NOT EQUAL 9 THEN 
+        RETURN NULL
+    END IF
+
+    dayStr = TRIM tokens[0]
+    monStr = TRIM tokens[1]
+    yearStr = TRIM tokens[2]
+    hourStr = TRIM tokens[3]
+    minStr = TRIM tokens[4]
+    sensorID = TRIM tokens[5]
+    sensorType = TRIM tokens[6]
+    zone = TRIM tokens[7]
+    valueStr = TRIM tokens[8]
+
+    IF dayStr, monStr, yearStr, hourStr, OR minStr are NOT valid integers THEN RETURN NULL
+    END IF
+
+    day = PARSE dayStr TO INTEGER
+    month = PARSE monStr TO INTEGER
+    year = PARSE yearStr TO INTEGER
+    hour = PARSE hourStr TO INTEGER
+    minute = PARSE minStr TO INTEGER
+
+    IF day, month, year, hour, OR minute fail Validator range checks THEN RETURN NULL
+    END IF
+
+    IF sensorID fails Validator check THEN RETURN NULL
+    IF sensorType fails Validator check THEN RETURN NULL
+    IF zone fails Validator check THEN RETURN NULL
+    IF valueStr is NOT numeric THEN RETURN NULL
+
+    value = PARSE valueStr to DOUBLE 
+    ts = NEW Timestamp (day, month, year, hour, minute)
+
+    RETURN NEW SensorReading(sensorID, sensorType, zone, value, ts)
+    END parseLine()
+
+    splitCSV() WIHT PARAMETERS line               //PRIVATE
+        IF line is NULL THEN 
+            RETURN NULL
+        END IF
+
+        commaCount = 0 
+        FOR i = 0 TO length of line - 1
+            IF character at position i EQUALS ',' THEN
+                commaCount = commaCount + 1
+                tokenIndex = 0
+                start = 0
+
+            FOR i = 0 TO length of line
+                IF i EQUALS length of line OR character at position i EQUALS ',' THEN
+                    result[tokenIndex] = SUBSTRING of line FROM start TO integers
+                    tokenIndex = tokenIndex + 1
+                    start = i + 1
+                END IF
+            END FOR
+
+        RETURN result
+    END splitCSV()
+
+END FileManager
+
+        
+
+        
+
+
+
+
