@@ -1,172 +1,201 @@
 BEGIN PUBLIC CLASS SensorArray
 
-        DECLARE PRIVATE ARRAY: SensorReading[], NAMED "data"
-        DECLARE PRIVATE INTEGER NAMED count
+    DECLARE PRIVATE STATIC FINAL INTEGER: INITIAL_CAPACITY        = 100
+    DECLARE PRIVATE STATIC FINAL INTEGER: CAPACITY_GROWTH_FACTOR  = 2
 
-        SET INITIAL_CAPACITY (INTEGER) TO EQAUL 100
-        SET GROWTH_FACTOR (INTEGER) TO EQAUL 2
+    DECLARE PRIVATE SensorReading ARRAY: readings
+    DECLARE PRIVATE INTEGER:             numberOfReadings
 
-        DECLARE PUBLIC METHOD SensorArray()
-            NEW METHOD CALL sensorReading WITH PARAMATERS INITIAL_CAPACITY -> SET TO "data"
-            INITIALISE count EQUAL TO "0"
-        END METHOD SensorArray()
 
-        DECLARE PUBLIC METHOD add() WITH PARAMATERS "reading" -> DATATYPE SensorReading (RETURN NOTHING)
-            IF "count" IS EQUAL TO LENGTH OF "data"                                                              //syntax -> if (count == data.length)
-                CALL METHOD: resize()
+    CONSTRUCTOR SensorArray()
+        readings         = NEW SensorReading ARRAY WITH SIZE INITIAL_CAPACITY
+        numberOfReadings = 0
+    END CONSTRUCTOR
+
+
+    PUBLIC METHOD add(SensorReading newReading) RETURN VOID
+        IF numberOfReadings EQUALS readings.length THEN
+            CALL growArray()                                       //grow the array when it fills up
+        END IF
+        readings[numberOfReadings] = newReading
+        numberOfReadings = numberOfReadings + 1
+    END METHOD add()
+
+
+    PUBLIC METHOD deleteAt(INTEGER indexToDelete) RETURN VOID
+        IF indexToDelete < 0 OR indexToDelete >= numberOfReadings THEN
+            THROW NEW IllegalArgumentException("Index out of bounds: " + indexToDelete)
+        END IF
+        //shift every reading after indexToDelete one slot to the left
+        FOR i = indexToDelete TO numberOfReadings - 2
+            readings[i] = readings[i + 1]
+        END FOR
+        numberOfReadings = numberOfReadings - 1
+        readings[numberOfReadings] = NULL
+    END METHOD deleteAt()
+
+
+    PUBLIC METHOD get(INTEGER indexToFetch) RETURN SensorReading
+        IF indexToFetch < 0 OR indexToFetch >= numberOfReadings THEN
+            THROW NEW IllegalArgumentException("Index out of bounds: " + indexToFetch)
+        END IF
+        RETURN readings[indexToFetch]
+    END METHOD get()
+
+
+    PUBLIC METHOD getCount() RETURN INTEGER
+        RETURN numberOfReadings
+    END METHOD getCount()
+
+
+    PUBLIC METHOD totalReadings() RETURN INTEGER
+        RETURN numberOfReadings
+    END METHOD totalReadings()
+
+
+    PUBLIC METHOD filterByZone(STRING zoneToMatch) RETURN SensorArray
+        DECLARE SensorArray: matchingReadings = NEW SensorArray()
+        FOR i = 0 TO numberOfReadings - 1
+            IF readings[i].getZone() EQUALS zoneToMatch THEN
+                CALL matchingReadings.add(readings[i])
             END IF
-            INITIALISE ARRAY "data" WITH ARGUMENTS "count" SET EQUAL TO "reading"
-            CALL "count" ADD ONE                                                                                 //syntax -> count++
-        END METHOD add()
+        END FOR
+        RETURN matchingReadings
+    END METHOD filterByZone()
 
-        CALL PUBLIC METHOD deleteAt() WITH PARAMATERS "index" (INT) (RETURN NOTHING)
-            IF "index" IS LESS THAN 0 OR "index" IS GREATER THAN OR EQUAL TO "count"
-                CALL NEW METHOD IllegalArgumentException() WITH PARAMATERS "Index out of bounds: " + index      //syntax -> throw new (method call)
+
+    PUBLIC METHOD filterBySensorType(STRING typeToMatch) RETURN SensorArray
+        DECLARE SensorArray: matchingReadings = NEW SensorArray()
+        FOR i = 0 TO numberOfReadings - 1
+            IF readings[i].getSensorType() EQUALS typeToMatch THEN
+                CALL matchingReadings.add(readings[i])
             END IF
-            USE SYSTEM CLASS AND CALL .arraycopy() WITH ARGUMENTS (SOURCE: "data", SOURCE POSITION: "index PLUS 1", DESTINATION: "data", DESTINATION POSITION: "index", LENGTH: "count MINUS index MINUS 1")
-            DECREMENT count BY 1
-            CALL data ARRAY WITH ARGUMENT count, SET EQUAL TO NULL
-        END METHOD deleteAt()
+        END FOR
+        RETURN matchingReadings
+    END METHOD filterBySensorType()
 
-        CALL PUBLIC METHOD get() <- DATATYPE SensorReading WTIH ARGUMENTS "index" (INTEGER) 
-            IF "index" IS LESS THAN 0 OR "index" IS GREATER THAN OR EQUAL TO "count"
-                CALL NEW METHOD IllegalArgumentException() WITH PARAMATERS "Index out of bounds: " + index      //syntax -> throw new (method call)
-            END IF
-            RETURN data ARRAY WITH ARGUMENT "index"
-        END METHOD get()
 
-        CALL METHOD getCount() <- DATATYPE: INTEGER
-            RETURN count
-        END METHOD getCount()
+    PUBLIC METHOD average() RETURN DOUBLE
+        DECLARE DOUBLE: averageValue = 0.0
+        IF numberOfReadings EQUALS 0 THEN
+            averageValue = 0.0
+        ELSE
+            DECLARE DOUBLE: runningTotal = 0.0
+            FOR i = 0 TO numberOfReadings - 1
+                runningTotal = runningTotal + readings[i].getValue()
+            END FOR
+            averageValue = runningTotal / numberOfReadings
+        END IF
+        RETURN averageValue
+    END METHOD average()
 
-        //check zone 
-        CALL PUBLIC METHOD filterByZone() <- DATATYPE: SensorArray WITH ARGUMENTS zone <- DATATYPE: String
-            DECLARE NEW OBJECT NAMED "result" <- DATATYPE: SensorArray
-            FOR LOOP TO START COUNTING AT 0, KEEP GOING UNTIL EVERY INDEX IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                IF CURRENT ZONE IS EQUAL TO CHOSEN ZONE
-                    ADD DATA TO "result"
+
+    PUBLIC METHOD minimum() RETURN DOUBLE
+        DECLARE DOUBLE: minimumValue = 0.0
+        IF numberOfReadings EQUALS 0 THEN
+            minimumValue = 0.0
+        ELSE
+            DECLARE DOUBLE: smallestSoFar = readings[0].getValue()
+            FOR i = 1 TO numberOfReadings - 1
+                IF readings[i].getValue() < smallestSoFar THEN
+                    smallestSoFar = readings[i].getValue()
                 END IF
-            END FOR LOOP
-            RETURN "result"
-        END METHOD filterByZone()
+            END FOR
+            minimumValue = smallestSoFar
+        END IF
+        RETURN minimumValue
+    END METHOD minimum()
 
-        //check type
-         CALL PUBLIC METHOD filterBySensorType() <- DATATYPE: SensorArray WITH ARGUMENTS type <- DATATYPE: String
-            DECLARE NEW OBJECT NAMED "result" <- DATATYPE: SensorArray
-            FOR LOOP TO START COUNTING AT 0, KEEP GOING UNTIL EVERY INDEX IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                IF CURRENT TYPE IS EQUAL TO CHOSEN TYPE
-                    ADD DATA TO "result"
+
+    PUBLIC METHOD maximum() RETURN DOUBLE
+        DECLARE DOUBLE: maximumValue = 0.0
+        IF numberOfReadings EQUALS 0 THEN
+            maximumValue = 0.0
+        ELSE
+            DECLARE DOUBLE: largestSoFar = readings[0].getValue()
+            FOR i = 1 TO numberOfReadings - 1
+                IF readings[i].getValue() > largestSoFar THEN
+                    largestSoFar = readings[i].getValue()
                 END IF
-            END FOR LOOP
-            RETURN "result"
-        END METHOD filterBySensorType()
+            END FOR
+            maximumValue = largestSoFar
+        END IF
+        RETURN maximumValue
+    END METHOD maximum()
 
-        CALL PUBLIC METHOD toArray() <- DATATYPE: SensorReading ARRAY
-            DECLARE NEW OBJECT NAMED "trimmed" <- DATATYPE: SensorReading ARRAY WITH "count" AS ARGUMENTS
-            USE SYSTEM CLASS AND CALL .arraycopy() WITH ARGUMENTS (SOURCE: "data", SOURCE POSITION: "0", DESTINATION: "trimmed", DESTINATION POSITION: "0", LENGTH: "count")
-            RETURN "trimmed"
-        END METHOD toArray()
 
-        CALL PUBLIC CLASS totalReadings() <- DATATYPE: INTEGER
-            RETURN "count"
-        END METHOD totalReadings()
-
-        CALL METHOD average() <- DATATYPE: DOUBLE
-            IF "count" EQUALS TO 0 
-                RETURN 0.0
+    PUBLIC METHOD outOfRangeCount() RETURN INTEGER
+        DECLARE INTEGER: numberOutOfRange = 0
+        FOR i = 0 TO numberOfReadings - 1
+            IF readings[i].isOutOfRange() EQUALS TRUE THEN
+                numberOutOfRange = numberOutOfRange + 1
             END IF
-            ELSE "sum" EQUALS TO 0.0
-            END ELSE
-            FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" HIT, INCREMENT "i" BY 1 EVERY ROUND
-                INCREMENT AND EQUAL "sum" BY INDEX
-            END FOR LOOP
-            RETURN "sum" DIVIDED BY "count"
-        END METHOD average()
+        END FOR
+        RETURN numberOutOfRange
+    END METHOD outOfRangeCount()
 
-        CALL METHOD minimum() <- DATATYPE: DOUBLE
-            IF "count" EQUALS TO 0 
-                RETURN 0.0
-            END IF
-            ELSE
-            DATATYPE: DOUBLE: "min" EQUALS TO INDEX 0 USING getValue()
-            END ELSE
-            FOR LOOP TO START COUNTING AT INDEX 1, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                IF INDEX IN "data" IS LESS THAN "min" 
-                    THEN "min" EQUALS TO INDEXED VALUE
+
+    PUBLIC METHOD outOfRangePercent() RETURN DOUBLE
+        DECLARE DOUBLE: percentOutOfRange = 0.0
+        IF numberOfReadings EQUALS 0 THEN
+            percentOutOfRange = 0.0
+        ELSE
+            DECLARE INTEGER: numberOutOfRange = CALL outOfRangeCount()
+            percentOutOfRange = ((DOUBLE) numberOutOfRange / numberOfReadings) * 100
+        END IF
+        RETURN percentOutOfRange
+    END METHOD outOfRangePercent()
+
+
+    PUBLIC METHOD getDistinctZones() RETURN STRING ARRAY
+        DECLARE STRING ARRAY: allZonesIncludingDuplicates = NEW STRING ARRAY WITH SIZE numberOfReadings
+        FOR i = 0 TO numberOfReadings - 1
+            allZonesIncludingDuplicates[i] = readings[i].getZone()
+        END FOR
+        RETURN CALL getUniqueValues(allZonesIncludingDuplicates)
+    END METHOD getDistinctZones()
+
+
+    PUBLIC METHOD getDistinctTypes() RETURN STRING ARRAY
+        DECLARE STRING ARRAY: allTypesIncludingDuplicates = NEW STRING ARRAY WITH SIZE numberOfReadings
+        FOR i = 0 TO numberOfReadings - 1
+            allTypesIncludingDuplicates[i] = readings[i].getSensorType()
+        END FOR
+        RETURN CALL getUniqueValues(allTypesIncludingDuplicates)
+    END METHOD getDistinctTypes()
+
+
+    PRIVATE METHOD getUniqueValues(STRING ARRAY valuesWithDuplicates) RETURN STRING ARRAY
+        DECLARE STRING ARRAY: uniqueValueBuffer    = NEW STRING ARRAY WITH SIZE valuesWithDuplicates.length
+        DECLARE INTEGER:      numberOfUniqueValues = 0
+        FOR i = 0 TO valuesWithDuplicates.length - 1
+            DECLARE BOOLEAN: alreadySeen = FALSE
+            FOR j = 0 TO numberOfUniqueValues - 1
+                IF uniqueValueBuffer[j] EQUALS valuesWithDuplicates[i] THEN
+                    alreadySeen = TRUE
                 END IF
-            RETURN "min"
-            END FOR LOOP
-        END METHOD minimum()
-
-        CALL METHOD maximum() <- DATATYPE: DOUBLE
-            IF "count" EQUALS TO 0 
-                RETURN 0.0
+            END FOR
+            IF alreadySeen EQUALS FALSE THEN
+                uniqueValueBuffer[numberOfUniqueValues] = valuesWithDuplicates[i]
+                numberOfUniqueValues = numberOfUniqueValues + 1
             END IF
-            ELSE
-            DATATYPE: DOUBLE: "max" EQUALS TO INDEX 0 USING getValue()
-            END ELSE
-            FOR LOOP TO START COUNTING AT INDEX 1, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                IF INDEX IN "data" IS GREATER THAN "max" 
-                    THEN "max" EQUALS TO INDEXED VALUE
-                END IF
-            RETURN "max"
-            END FOR LOOP
-        END METHOD maximum()
-
-        CALL PUBLIC METHOD outOfRangeCount() <- DATATYPE: INTEGER
-            "n" EQUALS 0
-            FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                IF INDEX IN "data" IS OUT OF RANGE                      //syntax <- data[i].isOutOfRange() 
-                    THEN INCREMENT "N" by 1
-            END FOR LOOP
-            RETURN "n"
-        END METHOD outOfRangeCount()
-
-        CALL PUBLIC METHOD outOfRangePercent() <- DATATYPE: DOUBLE
-            IF "count" IS EQUAL TO 0
-                RETURN 0.0                                                //exit function if RETURN is called
-            END IF
-            ELSE
-            RETURN (DOUBLE: outOfRangeCount() / count) * 100.0 
-            END ELSE
-        END METHOD outOfRangePercent()
-
-        CALL METHOD getDistinctZones() <- DATATYPE: STRING ARRAY
-            DECLARE NEW OBJECT NAMED "allZones" <- DATATYPE: STRING ARRAY WITH ARGUMENTS "count"
-            FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                CURRENT INDEX of "allZones" EQUALS DATA IN getZone() METHOD
-            RETURN distinctValues() <- WITH ARGUMENTS "allZones"
-        END METHOD
-
-        CALL METHOD getDistinctTypes() <- DATATYPE: STRING ARRAY
-            DECLARE NEW OBJECT NAMED "allTypes" <- DATATYPE: STRING ARRAY WITH ARGUMENTS "count"
-            FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS "count" IS HIT, INCREMENT "i" BY 1 EVERY ROUND
-                CURRENT INDEX of "allTypes" EQUALS DATA IN getSensorType() METHOD
-            RETURN distinctValues() <- WITH ARGUMENTS "allTypes"
-        END METHOD
-
-        CALL PRIVATE METHOD distinctValues() <- WITH ARGUMENTS "allValues"
-            DECLARE NEW OBJECT NAMED "result" <- DATATYPE: STRING ARRAY WITH ARGUMENTS "count"
-            SET "uniqueCount" EQUAL TO 0 (INTEGER)
-            FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS LENGTH OF allValues, INCREMENT "i" BY 1 EVERY ROUND
-                SET "found" EQUAL TO FALSE <- DATATYPE: BOOLEAN
-                    FOR LOOP TO START COUNTING AT INDEX 0, KEEP GOING UNTIL EVERY INDEX AS LONG AS "uniqueCount", INCREMENT "j" BY 1 EVERY ROUND
-                        IF result[j] EQUALS INDEX AT allValues[i]
-                            SET "found" EQUAL TO TRUE
-                            BREAK
-                        IF "found" IS FALSE
-                            SET result[uniqueCount] TO allValues[i]
-                            INCREMENT uniqueCount BY 1
-                        DECLARE "trimmed" AS STRING ARRAY OF SIZE "uniqueCount"
-                        COPY first "uniqueCount" elements FROM "result" INTO "trimmed"
-                        RETURN "trimmed"
-        END METHOD
-
-        CALL PRIVATE METHOD resize()
-        DECLARE "newData" AS SensorReading ARRAY OF SIZE (data.length MULTIPLIED BY GROWTH_FACTOR)
-        COPY "count" ELEMENTS FROM "data" STARTING AT INDEX 0 INTO "newData" STARTING AT INDEX 0
-        SET "data" TO "newData"
-        END METHOD
+        END FOR
+        //copy the unique values into a properly sized array
+        DECLARE STRING ARRAY: uniqueValuesTrimmed = NEW STRING ARRAY WITH SIZE numberOfUniqueValues
+        FOR i = 0 TO numberOfUniqueValues - 1
+            uniqueValuesTrimmed[i] = uniqueValueBuffer[i]
+        END FOR
+        RETURN uniqueValuesTrimmed
+    END METHOD getUniqueValues()
 
 
+    PRIVATE METHOD growArray() RETURN VOID
+        DECLARE INTEGER:             expandedCapacity = readings.length * CAPACITY_GROWTH_FACTOR
+        DECLARE SensorReading ARRAY: expandedReadings = NEW SensorReading ARRAY WITH SIZE expandedCapacity
+        FOR i = 0 TO numberOfReadings - 1
+            expandedReadings[i] = readings[i]
+        END FOR
+        readings = expandedReadings
+    END METHOD growArray()
 
+END CLASS SensorArray

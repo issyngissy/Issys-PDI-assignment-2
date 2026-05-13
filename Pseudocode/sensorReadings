@@ -1,134 +1,183 @@
-CLASS sensorReadings
+// NOTE: SensorReading and Timestamp now live in the same source file
+// (Java/SensorReading.java). Timestamp is a package-private helper class
+// that only SensorReading needs.
 
-    sensorID (String)
-    sensorType (String)
-    zone (String)
-    value (double)
-    timestamp (Timestamp object) 
+
+BEGIN PUBLIC CLASS SensorReading
+
+    DECLARE PRIVATE STRING:    sensorID
+    DECLARE PRIVATE STRING:    sensorType
+    DECLARE PRIVATE STRING:    zone
+    DECLARE PRIVATE DOUBLE:    value
+    DECLARE PRIVATE Timestamp: timestamp
+
 
     //default constructor
-    PUBLIC METHOD SensorReadings()
-        sensorID EQUALS NULL
-        sensorType EQUALS NULL
-        zone EQUALS NULL
-        value EQUALS DOUBLE: ZERO
-        timestamp EQUAlS new METHOD Timestamp()
-    END METHOD
+    CONSTRUCTOR SensorReading()
+        sensorID   = ""
+        sensorType = ""
+        zone       = ""
+        value      = 0.0
+        timestamp  = NEW Timestamp()
+    END CONSTRUCTOR
 
-    //constructor with parameters
-    PUBLIC METHOD SensorReadings WITH PARAMATERS:
-        sensorID AS STRING,
-        sensorType AS STRING,
-        zone AS STRING,
-        value AS DOUBLE,
-        timestamp AS Timestamp()
-    END PARAMATERS -> START METHOD LOGIC
-        this.sensorID EQUALS sensorID
-        this.sensorType EQUALS sensorType
-        this.zone EQUALS zone
-        this.value EQUALS value
-        this.timestamp EQUALS timestamp
-    END METHOD
-        
-    //?
-    PUBLIC METHOD SensorReadings WITH PARAMETERS (DATATYPE: SensorReading SET TO "other")
-        this.sensorID EQUALS other.sensorID
-        this.sensorType EQUALS other.sensorType
-        this.zone EQUALS other.zone
-        this.value EQUALS other.value
-        this.timestamp EQUALS new Timestamp(other.timestamp)
-    END METHOD
+
+    //full constructor
+    CONSTRUCTOR SensorReading(STRING sensorID, STRING sensorType, STRING zone, DOUBLE value, Timestamp timestamp)
+        this.sensorID   = sensorID
+        this.sensorType = sensorType
+        this.zone       = zone
+        this.value      = value
+        this.timestamp  = timestamp
+    END CONSTRUCTOR
+
+
+    //copy constructor - make a deep copy by copying the Timestamp too
+    CONSTRUCTOR SensorReading(SensorReading sourceReading)
+        this.sensorID   = sourceReading.sensorID
+        this.sensorType = sourceReading.sensorType
+        this.zone       = sourceReading.zone
+        this.value      = sourceReading.value
+        this.timestamp  = NEW Timestamp(sourceReading.timestamp)
+    END CONSTRUCTOR
+
 
     //--- ACCESSORS ---
+    PUBLIC METHOD getSensorID()   RETURN STRING:    RETURN sensorID
+    PUBLIC METHOD getSensorType() RETURN STRING:    RETURN sensorType
+    PUBLIC METHOD getZone()       RETURN STRING:    RETURN zone
+    PUBLIC METHOD getValue()      RETURN DOUBLE:    RETURN value
+    PUBLIC METHOD getTimestamp()  RETURN Timestamp: RETURN timestamp
 
-    ACCESSOR: getSensorID()
-    IMPORT:
-    EXPORT: sensorID
-    ASSERTION: get sensorID
-    ALGORITHM: RETURN sensorID
-
-    ACCESSOR: getSensorType()
-    IMPORT:
-    EXPORT: sensorType
-    ASSERTION: get sensorType
-    ALGORITHM: RETURN sensorType
-
-    ACCESSOR: getZone()
-    IMPORT:
-    EXPORT: zone
-    ASSERTION: get zone
-    ALGORITHM: RETURN zone
-
-    ACCESSOR: getValue()
-    IMPORT:
-    EXPORT: value
-    ASSERTION: get value
-    ALGORITHM: RETURN value
-
-    ACCESSOR: getTimestamp()
-    IMPORT:
-    EXPORT: Timestamp
-    ASSERTION: get Timestamp
-    ALGORITHM: RETURN Timestamp
 
     //--- MUTATORS ---
+    PUBLIC METHOD setSensorID(STRING sensorID)       RETURN VOID: this.sensorID   = sensorID
+    PUBLIC METHOD setSensorType(STRING sensorType)   RETURN VOID: this.sensorType = sensorType
+    PUBLIC METHOD setZone(STRING zone)               RETURN VOID: this.zone       = zone
+    PUBLIC METHOD setValue(DOUBLE value)             RETURN VOID: this.value      = value
+    PUBLIC METHOD setTimestamp(Timestamp timestamp)  RETURN VOID: this.timestamp  = timestamp
 
-    MUTATOR: setSensorID()
-    Import: sensorID (STRING)
-    Export: 
-    ASSERTION: Converts sensorID (String) into this.sensorID
-    ALGORITHM: this.SensorID EQUALS sensorID
 
-    MUTATOR: setSensorType()
-    Import: sensorType (STRING)
-    Export:
-    ASSERTION: Converts sensorType into this.sensorType
-    ALGORITHM: this.sensorType EQUALS sensorType
-
-    MUTATOR: setZone()
-    Import: zone (String)
-    Export:
-    ASSERTION: Converts zone into this.zone
-    ALGORITHM: this.zone EQUALS zone
-
-    MUTATOR: setValue()
-    Import: value (double)
-    Export:
-    ASSERTION: Converts value into this.value
-    ALGORITHM: this.value EQUALS value
-
-    MUTATOR: setTimestamp()
-    Import: timestamp (DATATYPE: Timestamp)
-    Export:
-    ASSERTION: Converts timestmap into this.timestamp
-    ALGORITHM: this.timestamp EQUALS timestamp
-
-    //--- SUBMODULE VALIDATION ---
-
-    PUBLIC STATIC METHOD getSafeRange WITH PARAMETERS (STRING sensorType) AS DATATYPE DOUBLE ARRAY
-        IF sensorType EQUALS "tempurature"               //syntax -> sensorType.equals("tempurature")
-            RETURN NEW DOUBLE ARRAY WITH 18.0, 30.0
+    //--- SAFE-RANGE LOGIC ---
+    PRIVATE STATIC METHOD getSafeRange(STRING sensorTypeToLookUp) RETURN DOUBLE ARRAY
+        DECLARE DOUBLE ARRAY: safeRangeBounds = NULL
+        IF sensorTypeToLookUp EQUALS "temperature" THEN
+            safeRangeBounds = NEW DOUBLE ARRAY WITH {18.0, 30.0}
+        ELSE IF sensorTypeToLookUp EQUALS "humidity" THEN
+            safeRangeBounds = NEW DOUBLE ARRAY WITH {40.0, 70.0}
+        ELSE IF sensorTypeToLookUp EQUALS "soilMoisture" THEN
+            safeRangeBounds = NEW DOUBLE ARRAY WITH {30.0, 60.0}
+        ELSE IF sensorTypeToLookUp EQUALS "light" THEN
+            safeRangeBounds = NEW DOUBLE ARRAY WITH {300.0, 1200.0}
         END IF
-        IF sensorType EQUALS "humidity"
-            RETURN NEW DOUBLE ARRAY WITH 40.0, 70.0
-        END IF
-        IF sensorType EQUALS "soilMoisture"
-            RETURN NEW DOBULE ARRAY WITH 30.0, 60.0
-        END IF
-        IF sensorType EQUALS "light"
-            RETURN NEW DOUBLE ARRAY WITH 300.0, 1200.0
-        END IF
-        RETURN NOTHING
-    END METHOD
+        RETURN safeRangeBounds
+    END METHOD getSafeRange()
 
-    PUBLIC METHOD outOfSafeRange() AS DATATYPE BOOLEAN
-        range EQUALS getSafeRange WITH PARAMETERS (sensorType) AS DATATYPE DOUBLE ARRAY
-        IF range EQUALS NULL THEN RETURN FALSE
-        RETURN value IS LESS THAN INDEX ZERO OF ARRAY OR value IS GREATER THAN INDEX ONE OF ARRAY
-    END METHOD
 
-    PUBLIC METHOD toString AS DATATYPE String   
-        RETURN WITH PARAMETERS ("[" PLUS timestamp.toString() PLUS "]" PLUS sensorID PLUS "(" PLUS sensorType PLUS "," PLUS zone PLUS "):" PLUS value)
-    END METHOD
-    
-END sensorReadings CLASS
+    PUBLIC METHOD isOutOfRange() RETURN BOOLEAN
+        DECLARE BOOLEAN: readingIsOutOfRange = FALSE
+        DECLARE DOUBLE ARRAY: safeRangeBounds = CALL getSafeRange(sensorType)
+        IF safeRangeBounds EQUALS NULL THEN
+            readingIsOutOfRange = FALSE                     //unknown sensor type - treat as in range
+        ELSE IF value < safeRangeBounds[0] THEN
+            readingIsOutOfRange = TRUE
+        ELSE IF value > safeRangeBounds[1] THEN
+            readingIsOutOfRange = TRUE
+        ELSE
+            readingIsOutOfRange = FALSE
+        END IF
+        RETURN readingIsOutOfRange
+    END METHOD isOutOfRange()
+
+
+    PUBLIC METHOD toString() RETURN STRING
+        DECLARE STRING: timestampPrefix = "[" + timestamp.toString() + "] "
+        DECLARE STRING: readingDetails  = sensorID + " (" + sensorType + ", " + zone + "): " + value
+        RETURN timestampPrefix + readingDetails
+    END METHOD toString()
+
+END CLASS SensorReading
+
+
+
+//============================================================================
+// Timestamp: value object holding day, month, year, hour, minute as ints.
+// Lives in the same file as SensorReading. Embedded inside every SensorReading.
+//============================================================================
+
+BEGIN CLASS Timestamp                                  //package-private (no "public" modifier)
+
+    DECLARE PRIVATE INTEGER: dayOfMonth
+    DECLARE PRIVATE INTEGER: monthOfYear
+    DECLARE PRIVATE INTEGER: year
+    DECLARE PRIVATE INTEGER: hour
+    DECLARE PRIVATE INTEGER: minute
+
+
+    //default constructor
+    CONSTRUCTOR Timestamp()
+        dayOfMonth  = 0
+        monthOfYear = 0
+        year        = 0
+        hour        = 0
+        minute      = 0
+    END CONSTRUCTOR
+
+
+    //full constructor
+    CONSTRUCTOR Timestamp(INTEGER dayOfMonth, INTEGER monthOfYear, INTEGER year, INTEGER hour, INTEGER minute)
+        this.dayOfMonth  = dayOfMonth
+        this.monthOfYear = monthOfYear
+        this.year        = year
+        this.hour        = hour
+        this.minute      = minute
+    END CONSTRUCTOR
+
+
+    //copy constructor
+    CONSTRUCTOR Timestamp(Timestamp sourceTimestamp)
+        this.dayOfMonth  = sourceTimestamp.dayOfMonth
+        this.monthOfYear = sourceTimestamp.monthOfYear
+        this.year        = sourceTimestamp.year
+        this.hour        = sourceTimestamp.hour
+        this.minute      = sourceTimestamp.minute
+    END CONSTRUCTOR
+
+
+    //--- ACCESSORS ---
+    PUBLIC METHOD getDayOfMonth()  RETURN INTEGER: RETURN dayOfMonth
+    PUBLIC METHOD getMonthOfYear() RETURN INTEGER: RETURN monthOfYear
+    PUBLIC METHOD getYear()        RETURN INTEGER: RETURN year
+    PUBLIC METHOD getHour()        RETURN INTEGER: RETURN hour
+    PUBLIC METHOD getMinute()      RETURN INTEGER: RETURN minute
+
+
+    //--- MUTATORS ---
+    PUBLIC METHOD setDayOfMonth(INTEGER dayOfMonth)   RETURN VOID: this.dayOfMonth  = dayOfMonth
+    PUBLIC METHOD setMonthOfYear(INTEGER monthOfYear) RETURN VOID: this.monthOfYear = monthOfYear
+    PUBLIC METHOD setYear(INTEGER year)               RETURN VOID: this.year        = year
+    PUBLIC METHOD setHour(INTEGER hour)               RETURN VOID: this.hour        = hour
+    PUBLIC METHOD setMinute(INTEGER minute)           RETURN VOID: this.minute      = minute
+
+
+    //formats as "dd/mm/yyyy hh:mm" with zero-padding
+    PUBLIC METHOD toString() RETURN STRING
+        DECLARE STRING: dayPadded    = CALL padWithLeadingZero(dayOfMonth)
+        DECLARE STRING: monthPadded  = CALL padWithLeadingZero(monthOfYear)
+        DECLARE STRING: hourPadded   = CALL padWithLeadingZero(hour)
+        DECLARE STRING: minutePadded = CALL padWithLeadingZero(minute)
+        RETURN dayPadded + "/" + monthPadded + "/" + year + " " + hourPadded + ":" + minutePadded
+    END METHOD toString()
+
+
+    PRIVATE METHOD padWithLeadingZero(INTEGER numberToPad) RETURN STRING
+        DECLARE STRING: paddedNumber = ""
+        IF numberToPad < 10 THEN
+            paddedNumber = "0" + numberToPad                     //pad single digits with a leading zero
+        ELSE
+            paddedNumber = "" + numberToPad
+        END IF
+        RETURN paddedNumber
+    END METHOD padWithLeadingZero()
+
+END CLASS Timestamp

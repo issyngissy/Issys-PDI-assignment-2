@@ -1,0 +1,136 @@
+starting session...
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+
+Value cannot be empty.
+Invalid sensor type.
+Invalid sensor type.
+Invalid sensor type.
+Invalid sensor type.
+starting session...
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+
+Available zones:
+ 1. ZoneA
+ 2. ZoneB
+ 3. ZoneC
+
+Statistics for zone ZoneB:
+ 1. Total number of readings
+ 2. Average value
+ 3. Minimum value
+ 4. Maximum value
+ 5. Number of readings outside safe range
+ 6. Percentage of readings outside safe range
+ 7. All statistics
+Total: 1
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+
+Statistics for entire greenhouse:
+ 1. Total number of readings
+ 2. Average value
+ 3. Minimum value
+ 4. Maximum value
+ 5. Number of readings outside safe range
+ 6. Percentage of readings outside safe range
+ 7. All statistics
+Total: 4
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+
+Available zones:
+ 1. ZoneA
+ 2. ZoneB
+ 3. ZoneC
+
+Statistics for zone ZoneC:
+ 1. Total number of readings
+ 2. Average value
+ 3. Minimum value
+ 4. Maximum value
+ 5. Number of readings outside safe range
+ 6. Percentage of readings outside safe range
+ 7. All statistics
+Minimum: 880.0
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+starting session...
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------
+
+Statistics for entire greenhouse:
+ 1. Total number of readings
+ 2. Average value
+ 3. Minimum value
+ 4. Maximum value
+ 5. Number of readings outside safe range
+ 6. Percentage of readings outside safe range
+ 7. All statistics
+Total: 4
+
+----------------------------------------
+Welcome to the Smart Greenhouse monitoring system
+Please select an option: 
+ 1. Statistics for the entire Greenhouse
+ 2. Statistics by zone
+ 3. Statistics by sensor type
+ 4. Add data readings
+ 5. Delete data readings
+ 6. Exit program
+----------------------------------------

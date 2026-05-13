@@ -5,188 +5,184 @@
 
 public class SensorArray {
 
-    private SensorReading[] data;
-    private int count;
+    private static final int INITIAL_CAPACITY = 100;
+    private static final int CAPACITY_GROWTH_FACTOR = 2;
+
+    private SensorReading[] readings;
+    private int numberOfReadings;
 
     public SensorArray() {
-        data = new sensorReading(INITIAL_CAPACITY);
-        count = 0;
+        readings = new SensorReading[INITIAL_CAPACITY];
+        numberOfReadings = 0;
     }
 
-    public void add(SensorReading reading) {
-        if (count == data.length); {
-            resize();
+    public void add(SensorReading newReading) {
+        if (numberOfReadings == readings.length) {
+            growArray();
         }
-
-    data[count] = reading;
-    count++;   
+        readings[numberOfReadings] = newReading;
+        numberOfReadings = numberOfReadings + 1;
     }
 
-    public void deleteAdd(int index) {
-        if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Index out of bounds: " + index);
+    public void deleteAt(int indexToDelete) {
+        if (indexToDelete < 0 || indexToDelete >= numberOfReadings) {
+            throw new IllegalArgumentException("Index out of bounds: " + indexToDelete);
         }
-        system.arraycopy(data, index + 1, data, index, count - index -1);
-        count--;
-        data[count] = null;
+        // shift every reading after indexToDelete one slot to the left
+        for (int i = indexToDelete; i < numberOfReadings - 1; i++) {
+            readings[i] = readings[i + 1];
+        }
+        numberOfReadings = numberOfReadings - 1;
+        readings[numberOfReadings] = null;
     }
 
-    public SensorReading get(int index) {
-        if (index < 0 || index >= count) {
-            throw new IllegalArgumentException("Index out of bounds: " + index);
+    public SensorReading get(int indexToFetch) {
+        if (indexToFetch < 0 || indexToFetch >= numberOfReadings) {
+            throw new IllegalArgumentException("Index out of bounds: " + indexToFetch);
         }
-        return data[index];
+        return readings[indexToFetch];
     }
 
     public int getCount() {
-        return count;
-    }
-
-    //check zone
-    public SensorArray filterByzone(String zone) {
-        SensorArray result = new SensorArray();
-        for (int i = 0; i <= count; i++) {
-            if (data[i].getZone().equals(zone)) {
-                result.add(data[i]);
-            }
-        }
-        return result;
-    }
-
-    //check type
-    public SensorArray filterBySeonsorType(String SensorArray) {
-        SensorArray result = new SensorArray[];
-        for (int i = 0; i <= count; i++) {
-            if (data[i].SensorType().equals(type) {
-                result.add(data[i]);
-            }
-        }
-        return result;
-    }
-
-    public SensorReading[] toArray() {
-        SensorReading trimmed = new SensorReading(count);
-        System.arraycopy(data, 0, trimmed, 0, count);
-        return trimmed;
+        return numberOfReadings;
     }
 
     public int totalReadings() {
-        return count;
+        return numberOfReadings;
+    }
+
+    public SensorArray filterByZone(String zoneToMatch) {
+        SensorArray matchingReadings = new SensorArray();
+        for (int i = 0; i < numberOfReadings; i++) {
+            if (readings[i].getZone().equals(zoneToMatch)) {
+                matchingReadings.add(readings[i]);
+            }
+        }
+        return matchingReadings;
+    }
+
+    public SensorArray filterBySensorType(String typeToMatch) {
+        SensorArray matchingReadings = new SensorArray();
+        for (int i = 0; i < numberOfReadings; i++) {
+            if (readings[i].getSensorType().equals(typeToMatch)) {
+                matchingReadings.add(readings[i]);
+            }
+        }
+        return matchingReadings;
     }
 
     public double average() {
-        if (count == 0) {
-            return 0.0;
+        double averageValue = 0.0;
+        if (numberOfReadings == 0) {
+            averageValue = 0.0;
         } else {
-            double sum = 0.0;
-          }
-        for (int i = 0; i < count; i++) {
-            sum += data[i].getValue();
+            double runningTotal = 0.0;
+            for (int i = 0; i < numberOfReadings; i++) {
+                runningTotal = runningTotal + readings[i].getValue();
+            }
+            averageValue = runningTotal / numberOfReadings;
         }
-        return sum / count;
+        return averageValue;
     }
 
     public double minimum() {
-        if (count == 0) {
-            return 0.0;
+        double minimumValue = 0.0;
+        if (numberOfReadings == 0) {
+            minimumValue = 0.0;
         } else {
-            double min = data[0].getValue();
-        }
-        for (int i =1; i < count; i++) {
-            if (data[i].getValue() < min) {
-                min = data[i].getValue();
+            double smallestSoFar = readings[0].getValue();
+            for (int i = 1; i < numberOfReadings; i++) {
+                if (readings[i].getValue() < smallestSoFar) {
+                    smallestSoFar = readings[i].getValue();
+                }
             }
-        return min;
+            minimumValue = smallestSoFar;
         }
+        return minimumValue;
     }
 
     public double maximum() {
-        if (count == 0) {
-            return 0.0;
+        double maximumValue = 0.0;
+        if (numberOfReadings == 0) {
+            maximumValue = 0.0;
         } else {
-            double max = data[0].getValue();
-        }
-        for (int i = 1; i < count; i++) {
-            if (data[i] > max) {
-                max = data[i].getValue();
+            double largestSoFar = readings[0].getValue();
+            for (int i = 1; i < numberOfReadings; i++) {
+                if (readings[i].getValue() > largestSoFar) {
+                    largestSoFar = readings[i].getValue();
+                }
             }
-        return max;
+            maximumValue = largestSoFar;
         }
+        return maximumValue;
     }
 
     public int outOfRangeCount() {
-        n = 0;
-        for (int i = 0; i < count; i++) {
-            if (data[i].isOutOfRange()) {
-                n++;
+        int numberOutOfRange = 0;
+        for (int i = 0; i < numberOfReadings; i++) {
+            if (readings[i].isOutOfRange()) {
+                numberOutOfRange = numberOutOfRange + 1;
             }
         }
-        return n;
+        return numberOutOfRange;
     }
 
     public double outOfRangePercent() {
-        if (count == 0) {
-            return 0.0;
+        double percentOutOfRange = 0.0;
+        if (numberOfReadings == 0) {
+            percentOutOfRange = 0.0;
         } else {
-            return (double) outOfRangeCount() / count * 100;
+            int numberOutOfRange = outOfRangeCount();
+            percentOutOfRange = ((double) numberOutOfRange / numberOfReadings) * 100;
         }
+        return percentOutOfRange;
     }
 
     public String[] getDistinctZones() {
-        String[] allZones = new String[count];
-        for (int i = 0; i < count; i++) {
-            allZones[i] = data[i].getZone();
-
-        return distinctValues(allTypes);
+        String[] allZonesIncludingDuplicates = new String[numberOfReadings];
+        for (int i = 0; i < numberOfReadings; i++) {
+            allZonesIncludingDuplicates[i] = readings[i].getZone();
         }
+        return getUniqueValues(allZonesIncludingDuplicates);
     }
 
     public String[] getDistinctTypes() {
-        String[] allTypes = new String[count];
-        for (int i = 0; i < count; i++) {
-            allTypes[i] = data[i].getSensorType();
-        return distinctValues(allTypes);
+        String[] allTypesIncludingDuplicates = new String[numberOfReadings];
+        for (int i = 0; i < numberOfReadings; i++) {
+            allTypesIncludingDuplicates[i] = readings[i].getSensorType();
         }
+        return getUniqueValues(allTypesIncludingDuplicates);
     }
 
-    private String[] distinctValues(String[] allValues) {
-        String[] result = new String[count];
-        int uniqueCount = 0;
-        for (int i = 0; i < allValues; i++) {
-            boolean found = false;
-                for (int j = 0; j < allValues; j++) {
-                    if (result[j].equals(allValues[i])) {
-                        found = true;
-                        break;
-                    }
-                    if (found = false) {
-                        result[uniqueCount++] = allValues[i];
-                    }
-                    String[] trimmed = new String[uniqueCount];
-                    System.arraycopy(result, 0, trimmed, 0, uniqueCount);
-                    return trimmed;
+    private String[] getUniqueValues(String[] valuesWithDuplicates) {
+        String[] uniqueValueBuffer = new String[valuesWithDuplicates.length];
+        int numberOfUniqueValues = 0;
+        for (int i = 0; i < valuesWithDuplicates.length; i++) {
+            boolean alreadySeen = false;
+            for (int j = 0; j < numberOfUniqueValues; j++) {
+                if (uniqueValueBuffer[j].equals(valuesWithDuplicates[i])) {
+                    alreadySeen = true;
                 }
+            }
+            if (alreadySeen == false) {
+                uniqueValueBuffer[numberOfUniqueValues] = valuesWithDuplicates[i];
+                numberOfUniqueValues = numberOfUniqueValues + 1;
+            }
         }
+        // copy the unique values into a properly sized array
+        String[] uniqueValuesTrimmed = new String[numberOfUniqueValues];
+        for (int i = 0; i < numberOfUniqueValues; i++) {
+            uniqueValuesTrimmed[i] = uniqueValueBuffer[i];
+        }
+        return uniqueValuesTrimmed;
     }
 
-    private void resize() {
-        SensorReading[] newData = new SensorReading[data.length * GROWTH_FACTOR];
-        system.arraycopy(data, 0, newData, 0, count);
-        data = newData;
+    private void growArray() {
+        int expandedCapacity = readings.length * CAPACITY_GROWTH_FACTOR;
+        SensorReading[] expandedReadings = new SensorReading[expandedCapacity];
+        for (int i = 0; i < numberOfReadings; i++) {
+            expandedReadings[i] = readings[i];
+        }
+        readings = expandedReadings;
     }
-
-
-
-
-
-
-
-
-
-    
-
-        
-
-
-    
 }
