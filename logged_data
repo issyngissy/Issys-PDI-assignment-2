@@ -1,193 +1,219 @@
 starting session...
 
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
 
-Value cannot be empty.
-Invalid sensor type.
-Invalid sensor type.
-Invalid sensor type.
-Invalid sensor type.
+Available sensor types
+1. temperature
+2. humidity
+3. soilMoisture
+4. light
+
+Stats for type humidity
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Maximum: 61.2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
 starting session...
 
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
 
-Available zones:
- 1. ZoneA
- 2. ZoneB
- 3. ZoneC
+starting session...
 
-Statistics for zone ZoneB:
- 1. Total number of readings
- 2. Average value
- 3. Minimum value
- 4. Maximum value
- 5. Number of readings outside safe range
- 6. Percentage of readings outside safe range
- 7. All statistics
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Available zones
+1. ZoneA
+2. ZoneB
+3. ZoneC
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Select zone
+1. Zone A
+2. Zone B
+3. Zone C
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+starting session...
+
+
+Main menu
+Main menu
+1. overall statistics
+1. overall statistics
+2. stats by zone
+2. stats by zone
+3. stats by sensor type
+3. stats by sensor type
+4. add a reading
+4. add a reading
+5. delete a reading
+5. delete a reading
+6. exit
+6. exit
+
+Available sensor types
+
+Select zone
+1. Zone A
+2. Zone B
+3. Zone C
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+1. temperature
+ending session
+
+2. humidity
+3. soilMoisture
+4. light
+
+Stats for type temperature
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
 Total: 1
 
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
 
-Statistics for entire greenhouse:
- 1. Total number of readings
- 2. Average value
- 3. Minimum value
- 4. Maximum value
- 5. Number of readings outside safe range
- 6. Percentage of readings outside safe range
- 7. All statistics
-Total: 4
-
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
-
-Available zones:
- 1. ZoneA
- 2. ZoneB
- 3. ZoneC
-
-Statistics for zone ZoneC:
- 1. Total number of readings
- 2. Average value
- 3. Minimum value
- 4. Maximum value
- 5. Number of readings outside safe range
- 6. Percentage of readings outside safe range
- 7. All statistics
-Minimum: 880.0
-
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
 starting session...
 
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
 
-Statistics for entire greenhouse:
- 1. Total number of readings
- 2. Average value
- 3. Minimum value
- 4. Maximum value
- 5. Number of readings outside safe range
- 6. Percentage of readings outside safe range
- 7. All statistics
-Total: 4
+Add new reading
 
-----------------------------------------
-Welcome to the Smart Greenhouse monitoring system
-Please select an option: 
- 1. Statistics for the entire Greenhouse
- 2. Statistics by zone
- 3. Statistics by sensor type
- 4. Add data readings
- 5. Delete data readings
- 6. Exit program
-----------------------------------------
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
-Please enter an integer between 1 and 6.
+Select sensor type
+1. temperature
+2. humidity
+3. soilMoisture
+4. light
+
+Select zone
+1. ZoneA
+2. ZoneB
+3. ZoneC
+Added: [05/05/2003 11:33] LGT901 (temperature, ZoneA): 44.5
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
