@@ -1,330 +1,135 @@
-codex// NOTE: GreenhouseDataStorage and Validator now live in the same source file
-// (Java/GreenhouseDataStorage.java). Validator is a package-private helper class
-// only used by GreenhouseDataStorage (parseLine) and Menu (input validation).
-
-
-IMPORT java.io.BufferedReader, java.io.BufferedWriter,
-       java.io.FileReader,    java.io.FileWriter,
-       java.io.IOException
-
-
 BEGIN PUBLIC CLASS GreenhouseDataStorage
 
-
-    PUBLIC STATIC METHOD loadCSV(STRING csvFilename) RETURN SensorArray
-        DECLARE SensorArray:    loadedReadings = NEW SensorArray()
-        DECLARE BufferedReader: csvReader      = NULL
+    PUBLIC STATIC METHOD loadCSV(STRING csvFilename) RETURNS SensorArray
+        DECLARE SensorArray loadedReadings = NEW SensorArray()
+        DECLARE BufferedReader csvReader = NULL
 
         TRY
-            csvReader = OPEN FILE csvFilename FOR reading
-            CALL csvReader.readLine()                                              //read and discard the header row
-            DECLARE INTEGER: currentLineNumber = 1
+            SET csvReader = OPEN csvFilename FOR READING
+            READ AND IGNORE FIRST LINE
 
-            DECLARE STRING: currentLine = READ LINE FROM csvReader
-            WHILE currentLine DOES NOT EQUAL NULL
-                currentLineNumber = currentLineNumber + 1
-                currentLine = TRIM whitespace from currentLine
+            DECLARE INTEGER currentLineNumber = 1
+            DECLARE STRING currentLine = READ LINE FROM csvReader
+
+            WHILE currentLine IS NOT NULL
+                SET currentLineNumber = currentLineNumber + 1
+                SET currentLine = currentLine.trim()
+
                 IF currentLine.length() > 0 THEN
-                    DECLARE SensorReading: parsedReading = CALL parseLine(currentLine)
-                    IF parsedReading DOES NOT EQUAL NULL THEN
+                    DECLARE SensorReading parsedReading = CALL parseLine(currentLine)
+
+                    IF parsedReading IS NOT NULL THEN
                         CALL loadedReadings.add(parsedReading)
                     ELSE
-                        PRINT "Warning: skipped invalid row " + currentLineNumber + ": " + currentLine
+                        PRINT "Warning: skipped invalid row " + currentLineNumber
                     END IF
                 END IF
-                currentLine = READ LINE FROM csvReader
+
+                SET currentLine = READ LINE FROM csvReader
             END WHILE
-        CATCH IOException fileReadError
-            PRINT "Error loading file '" + csvFilename + "': " + fileReadError.getMessage()
+
+        CATCH IOException
+            PRINT "Error loading file"
         END TRY
 
-        IF csvReader DOES NOT EQUAL NULL THEN
-            TRY
-                CALL csvReader.close()
-            CATCH IOException fileCloseError
-                //ignore - file is already read
-            END TRY
+        IF csvReader IS NOT NULL THEN
+            CLOSE csvReader
         END IF
 
         RETURN loadedReadings
-    END METHOD loadCSV()
+    END METHOD
 
 
-    PUBLIC STATIC METHOD saveCSV(STRING csvFilename, SensorArray readingsToSave) RETURN VOID
-        DECLARE BufferedWriter: csvWriter = NULL
+    PUBLIC STATIC METHOD saveCSV(STRING csvFilename, SensorArray readingsToSave)
+        DECLARE BufferedWriter csvWriter = NULL
 
         TRY
-            csvWriter = OPEN FILE csvFilename FOR writing (overwrite mode)
-            CALL csvWriter.write("day,month,year,hour,minute,sensorID,sensorType,zone,value")
-            CALL csvWriter.newLine()
+            SET csvWriter = OPEN csvFilename FOR WRITING IN OVERWRITE MODE
+            WRITE "day,month,year,hour,minute,sensorID,sensorType,zone,value"
+            WRITE NEW LINE
 
             FOR i = 0 TO readingsToSave.getCount() - 1
-                DECLARE SensorReading: currentReading   = CALL readingsToSave.get(i)
-                DECLARE Timestamp:     currentTimestamp = CALL currentReading.getTimestamp()
-                DECLARE STRING: csvRowString = currentTimestamp.getDayOfMonth()  + "," +
-                                               currentTimestamp.getMonthOfYear() + "," +
-                                               currentTimestamp.getYear()        + "," +
-                                               currentTimestamp.getHour()        + "," +
-                                               currentTimestamp.getMinute()      + "," +
-                                               currentReading.getSensorID()      + "," +
-                                               currentReading.getSensorType()    + "," +
-                                               currentReading.getZone()          + "," +
-                                               currentReading.getValue()
-                CALL csvWriter.write(csvRowString)
-                CALL csvWriter.newLine()
+                DECLARE SensorReading currentReading = CALL readingsToSave.get(i)
+                DECLARE Timestamp currentTimestamp = CALL currentReading.getTimestamp()
+
+                DECLARE STRING csvLine =
+                    currentTimestamp.getDayOfMonth() + "," +
+                    currentTimestamp.getMonthOfYear() + "," +
+                    currentTimestamp.getYear() + "," +
+                    currentTimestamp.getHour() + "," +
+                    currentTimestamp.getMinute() + "," +
+                    currentReading.getSensorID() + "," +
+                    currentReading.getSensorType() + "," +
+                    currentReading.getZone() + "," +
+                    currentReading.getValue()
+
+                WRITE csvLine
+                WRITE NEW LINE
             END FOR
 
-            CALL csvWriter.flush()
-        CATCH IOException fileWriteError
-            PRINT "Error saving file '" + csvFilename + "': " + fileWriteError.getMessage()
+        CATCH IOException
+            PRINT "Error saving file"
         END TRY
 
-        IF csvWriter DOES NOT EQUAL NULL THEN
-            TRY
-                CALL csvWriter.close()
-            CATCH IOException fileCloseError
-                //ignore - file is already written
-            END TRY
+        IF csvWriter IS NOT NULL THEN
+            CLOSE csvWriter
         END IF
-    END METHOD saveCSV()
+    END METHOD
 
 
-    PRIVATE STATIC METHOD parseLine(STRING csvLine) RETURN SensorReading
-        DECLARE SensorReading: parsedReading = NULL
-        DECLARE STRING ARRAY:  csvFields     = CALL splitCSV(csvLine)
+    PRIVATE STATIC METHOD parseLine(STRING csvLine) RETURNS SensorReading
+        DECLARE SensorReading parsedReading = NULL
+        DECLARE STRING ARRAY csvFields = NULL
 
-        IF csvFields DOES NOT EQUAL NULL AND csvFields.length EQUALS 9 THEN
-            DECLARE STRING: dayString     = TRIM csvFields[0]
-            DECLARE STRING: monthString   = TRIM csvFields[1]
-            DECLARE STRING: yearString    = TRIM csvFields[2]
-            DECLARE STRING: hourString    = TRIM csvFields[3]
-            DECLARE STRING: minuteString  = TRIM csvFields[4]
-            DECLARE STRING: sensorID      = TRIM csvFields[5]
-            DECLARE STRING: sensorType    = TRIM csvFields[6]
-            DECLARE STRING: zone          = TRIM csvFields[7]
-            DECLARE STRING: valueString   = TRIM csvFields[8]
+        IF csvLine IS NOT NULL THEN
+            SET csvFields = SPLIT csvLine BY "," KEEPING EMPTY FIELDS
+        END IF
 
-            //one-flag validation: any failing check sets rowIsValid = FALSE
-            DECLARE BOOLEAN: rowIsValid = TRUE
+        IF csvFields EXISTS AND csvFields.length EQUALS 9 THEN
+            DECLARE STRING dayString = csvFields[0].trim()
+            DECLARE STRING monthString = csvFields[1].trim()
+            DECLARE STRING yearString = csvFields[2].trim()
+            DECLARE STRING hourString = csvFields[3].trim()
+            DECLARE STRING minuteString = csvFields[4].trim()
+            DECLARE STRING sensorID = csvFields[5].trim()
+            DECLARE STRING sensorType = csvFields[6].trim()
+            DECLARE STRING zone = csvFields[7].trim()
+            DECLARE STRING valueString = csvFields[8].trim()
 
-            IF Validator.isInteger(dayString)    EQUALS FALSE THEN rowIsValid = FALSE END IF
-            IF Validator.isInteger(monthString)  EQUALS FALSE THEN rowIsValid = FALSE END IF
-            IF Validator.isInteger(yearString)   EQUALS FALSE THEN rowIsValid = FALSE END IF
-            IF Validator.isInteger(hourString)   EQUALS FALSE THEN rowIsValid = FALSE END IF
-            IF Validator.isInteger(minuteString) EQUALS FALSE THEN rowIsValid = FALSE END IF
+            DECLARE BOOLEAN rowIsValid = TRUE
+
+            IF Validator.isInteger(dayString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+            IF Validator.isInteger(monthString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+            IF Validator.isInteger(yearString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+            IF Validator.isInteger(hourString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+            IF Validator.isInteger(minuteString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
 
             IF rowIsValid EQUALS TRUE THEN
-                DECLARE INTEGER: day    = PARSE dayString    TO INTEGER
-                DECLARE INTEGER: month  = PARSE monthString  TO INTEGER
-                DECLARE INTEGER: year   = PARSE yearString   TO INTEGER
-                DECLARE INTEGER: hour   = PARSE hourString   TO INTEGER
-                DECLARE INTEGER: minute = PARSE minuteString TO INTEGER
+                DECLARE INTEGER day = PARSE dayString AS INTEGER
+                DECLARE INTEGER month = PARSE monthString AS INTEGER
+                DECLARE INTEGER year = PARSE yearString AS INTEGER
+                DECLARE INTEGER hour = PARSE hourString AS INTEGER
+                DECLARE INTEGER minute = PARSE minuteString AS INTEGER
 
-                IF Validator.isValidDay(day)               EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidMonth(month)           EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidYear(year)             EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidHour(hour)             EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidMinute(minute)         EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidSensorID(sensorID)     EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidSensorType(sensorType) EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isValidZone(zone)             EQUALS FALSE THEN rowIsValid = FALSE END IF
-                IF Validator.isNumeric(valueString)        EQUALS FALSE THEN rowIsValid = FALSE END IF
+                IF Validator.isValidDay(day) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidMonth(month) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidYear(year) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidHour(hour) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidMinute(minute) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidSensorID(sensorID) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidSensorType(sensorType) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isValidZone(zone) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
+                IF Validator.isNumeric(valueString) EQUALS FALSE THEN SET rowIsValid = FALSE END IF
 
                 IF rowIsValid EQUALS TRUE THEN
-                    DECLARE DOUBLE:    sensorValue       = PARSE valueString TO DOUBLE
-                    DECLARE Timestamp: readingTimestamp  = NEW Timestamp(day, month, year, hour, minute)
-                    parsedReading = NEW SensorReading(sensorID, sensorType, zone, sensorValue, readingTimestamp)
+                    DECLARE DOUBLE sensorValue = PARSE valueString AS DOUBLE
+                    DECLARE Timestamp readingTimestamp = NEW Timestamp(day, month, year, hour, minute)
+                    SET parsedReading = NEW SensorReading(sensorID, sensorType, zone, sensorValue, readingTimestamp)
                 END IF
             END IF
         END IF
 
         RETURN parsedReading
-    END METHOD parseLine()
+    END METHOD
 
-
-    PRIVATE STATIC METHOD splitCSV(STRING lineToSplit) RETURN STRING ARRAY
-        DECLARE STRING ARRAY: splitFields = NULL
-
-        IF lineToSplit DOES NOT EQUAL NULL THEN
-            //count commas so we know how big to make the array
-            DECLARE INTEGER: numberOfCommas = 0
-            FOR i = 0 TO lineToSplit.length() - 1
-                IF lineToSplit.charAt(i) EQUALS ',' THEN
-                    numberOfCommas = numberOfCommas + 1
-                END IF
-            END FOR
-
-            splitFields = NEW STRING ARRAY WITH SIZE (numberOfCommas + 1)
-            DECLARE INTEGER: currentFieldIndex = 0
-            DECLARE INTEGER: currentFieldStart = 0
-            FOR i = 0 TO lineToSplit.length()
-                IF i EQUALS lineToSplit.length() OR lineToSplit.charAt(i) EQUALS ',' THEN
-                    splitFields[currentFieldIndex] = lineToSplit.substring(currentFieldStart, i)
-                    currentFieldIndex = currentFieldIndex + 1
-                    currentFieldStart = i + 1
-                END IF
-            END FOR
-        END IF
-
-        RETURN splitFields
-    END METHOD splitCSV()
-
-END CLASS GreenhouseDataStorage
-
-
-
-//============================================================================
-// Validator: static input-checking helpers. Confirms sensor type is one of the
-// four allowed values, zone/sensorID are non-empty, date/time fields fall in
-// valid ranges, and that strings parse as int or double. Used by
-// GreenhouseDataStorage and Menu before accepting any reading.
-//============================================================================
-
-BEGIN CLASS Validator                                  //package-private (no "public" modifier)
-
-    DECLARE PRIVATE STATIC FINAL STRING ARRAY: VALID_SENSOR_TYPES = {"temperature", "humidity", "soilMoisture", "light"}
-
-    DECLARE PRIVATE STATIC FINAL INTEGER: MIN_DAY    = 1
-    DECLARE PRIVATE STATIC FINAL INTEGER: MAX_DAY    = 31
-    DECLARE PRIVATE STATIC FINAL INTEGER: MIN_MONTH  = 1
-    DECLARE PRIVATE STATIC FINAL INTEGER: MAX_MONTH  = 12
-    DECLARE PRIVATE STATIC FINAL INTEGER: MIN_YEAR   = 2000
-    DECLARE PRIVATE STATIC FINAL INTEGER: MAX_YEAR   = 2100
-    DECLARE PRIVATE STATIC FINAL INTEGER: MIN_HOUR   = 0
-    DECLARE PRIVATE STATIC FINAL INTEGER: MAX_HOUR   = 23
-    DECLARE PRIVATE STATIC FINAL INTEGER: MIN_MINUTE = 0
-    DECLARE PRIVATE STATIC FINAL INTEGER: MAX_MINUTE = 59
-
-
-    PUBLIC STATIC METHOD isValidSensorType(STRING sensorTypeToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF sensorTypeToValidate EQUALS NULL THEN
-            isValid = FALSE
-        ELSE
-            FOR i = 0 TO VALID_SENSOR_TYPES.length - 1
-                IF VALID_SENSOR_TYPES[i] EQUALS sensorTypeToValidate THEN
-                    isValid = TRUE
-                END IF
-            END FOR
-        END IF
-        RETURN isValid
-    END METHOD isValidSensorType()
-
-
-    PUBLIC STATIC METHOD isValidZone(STRING zoneToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF zoneToValidate EQUALS NULL THEN
-            isValid = FALSE
-        ELSE IF zoneToValidate.trim().length() > 0 THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidZone()
-
-
-    PUBLIC STATIC METHOD isValidSensorID(STRING sensorIdToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF sensorIdToValidate EQUALS NULL THEN
-            isValid = FALSE
-        ELSE IF sensorIdToValidate.trim().length() > 0 THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidSensorID()
-
-
-    PUBLIC STATIC METHOD isValidDay(INTEGER dayToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF dayToValidate >= MIN_DAY AND dayToValidate <= MAX_DAY THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidDay()
-
-
-    PUBLIC STATIC METHOD isValidMonth(INTEGER monthToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF monthToValidate >= MIN_MONTH AND monthToValidate <= MAX_MONTH THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidMonth()
-
-
-    PUBLIC STATIC METHOD isValidYear(INTEGER yearToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF yearToValidate >= MIN_YEAR AND yearToValidate <= MAX_YEAR THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidYear()
-
-
-    PUBLIC STATIC METHOD isValidHour(INTEGER hourToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF hourToValidate >= MIN_HOUR AND hourToValidate <= MAX_HOUR THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidHour()
-
-
-    PUBLIC STATIC METHOD isValidMinute(INTEGER minuteToValidate) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF minuteToValidate >= MIN_MINUTE AND minuteToValidate <= MAX_MINUTE THEN
-            isValid = TRUE
-        ELSE
-            isValid = FALSE
-        END IF
-        RETURN isValid
-    END METHOD isValidMinute()
-
-
-    PUBLIC STATIC METHOD isNumeric(STRING stringToCheck) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF stringToCheck EQUALS NULL THEN
-            isValid = FALSE
-        ELSE IF stringToCheck.trim().length() EQUALS 0 THEN
-            isValid = FALSE
-        ELSE
-            TRY
-                PARSE stringToCheck.trim() TO DOUBLE
-                isValid = TRUE
-            CATCH NumberFormatException notANumber
-                isValid = FALSE
-            END TRY
-        END IF
-        RETURN isValid
-    END METHOD isNumeric()
-
-
-    PUBLIC STATIC METHOD isInteger(STRING stringToCheck) RETURN BOOLEAN
-        DECLARE BOOLEAN: isValid = FALSE
-        IF stringToCheck EQUALS NULL THEN
-            isValid = FALSE
-        ELSE IF stringToCheck.trim().length() EQUALS 0 THEN
-            isValid = FALSE
-        ELSE
-            TRY
-                PARSE stringToCheck.trim() TO INTEGER
-                isValid = TRUE
-            CATCH NumberFormatException notAnInteger
-                isValid = FALSE
-            END TRY
-        END IF
-        RETURN isValid
-    END METHOD isInteger()
-
-END CLASS Validator
+END CLASS

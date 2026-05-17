@@ -1,0 +1,95 @@
+BEGIN PUBLIC CLASS Validator
+
+    DECLARE PRIVATE STATIC FINAL STRING ARRAY VALID_SENSOR_TYPES =
+        {"temperature", "humidity", "soilMoisture", "light"}
+
+    DECLARE PRIVATE STATIC FINAL INTEGER MIN_DAY = 1
+    DECLARE PRIVATE STATIC FINAL INTEGER MAX_DAY = 31
+    DECLARE PRIVATE STATIC FINAL INTEGER MIN_MONTH = 1
+    DECLARE PRIVATE STATIC FINAL INTEGER MAX_MONTH = 12
+    DECLARE PRIVATE STATIC FINAL INTEGER MIN_YEAR = 2000
+    DECLARE PRIVATE STATIC FINAL INTEGER MAX_YEAR = 2100
+    DECLARE PRIVATE STATIC FINAL INTEGER MIN_HOUR = 0
+    DECLARE PRIVATE STATIC FINAL INTEGER MAX_HOUR = 23
+    DECLARE PRIVATE STATIC FINAL INTEGER MIN_MINUTE = 0
+    DECLARE PRIVATE STATIC FINAL INTEGER MAX_MINUTE = 59
+
+
+    PUBLIC STATIC METHOD isValidSensorType(STRING sensorTypeToValidate) RETURNS BOOLEAN
+        IF sensorTypeToValidate IS NULL THEN
+            RETURN FALSE
+        END IF
+
+        FOR i = 0 TO VALID_SENSOR_TYPES.length - 1
+            IF VALID_SENSOR_TYPES[i] EQUALS sensorTypeToValidate THEN
+                RETURN TRUE
+            END IF
+        END FOR
+
+        RETURN FALSE
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidZone(STRING zoneToValidate) RETURNS BOOLEAN
+        RETURN zoneToValidate IS NOT NULL AND zoneToValidate.trim().length() > 0
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidSensorID(STRING sensorIdToValidate) RETURNS BOOLEAN
+        RETURN sensorIdToValidate IS NOT NULL AND sensorIdToValidate.trim().length() > 0
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidDay(INTEGER dayToValidate) RETURNS BOOLEAN
+        RETURN dayToValidate >= MIN_DAY AND dayToValidate <= MAX_DAY
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidMonth(INTEGER monthToValidate) RETURNS BOOLEAN
+        RETURN monthToValidate >= MIN_MONTH AND monthToValidate <= MAX_MONTH
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidYear(INTEGER yearToValidate) RETURNS BOOLEAN
+        RETURN yearToValidate >= MIN_YEAR AND yearToValidate <= MAX_YEAR
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidHour(INTEGER hourToValidate) RETURNS BOOLEAN
+        RETURN hourToValidate >= MIN_HOUR AND hourToValidate <= MAX_HOUR
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isValidMinute(INTEGER minuteToValidate) RETURNS BOOLEAN
+        RETURN minuteToValidate >= MIN_MINUTE AND minuteToValidate <= MAX_MINUTE
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isNumeric(STRING stringToCheck) RETURNS BOOLEAN
+        IF stringToCheck IS NULL OR stringToCheck.trim().length() EQUALS 0 THEN
+            RETURN FALSE
+        END IF
+
+        TRY
+            PARSE stringToCheck.trim() AS DOUBLE
+            RETURN TRUE
+        CATCH NumberFormatException
+            RETURN FALSE
+        END TRY
+    END METHOD
+
+
+    PUBLIC STATIC METHOD isInteger(STRING stringToCheck) RETURNS BOOLEAN
+        IF stringToCheck IS NULL OR stringToCheck.trim().length() EQUALS 0 THEN
+            RETURN FALSE
+        END IF
+
+        TRY
+            PARSE stringToCheck.trim() AS INTEGER
+            RETURN TRUE
+        CATCH NumberFormatException
+            RETURN FALSE
+        END TRY
+    END METHOD
+
+END CLASS

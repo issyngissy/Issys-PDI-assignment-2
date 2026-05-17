@@ -1,62 +1,54 @@
-IMPORT java.io.BufferedWriter, java.io.FileWriter, java.io.IOException
-
-
 BEGIN PUBLIC CLASS Logger
 
-    DECLARE PRIVATE STATIC FINAL STRING: LOG_FILE_NAME = "logged_data"
-    DECLARE PRIVATE STATIC BufferedWriter: logFileWriter = NULL
+    DECLARE PRIVATE STATIC FINAL STRING LOG_FILE_NAME = "logged_data"
+    DECLARE PRIVATE STATIC BufferedWriter logFileWriter = NULL
 
 
-    PUBLIC STATIC METHOD open() RETURN VOID
+    PUBLIC STATIC METHOD open()
         TRY
-            logFileWriter = NEW BufferedWriter(NEW FileWriter(LOG_FILE_NAME, TRUE))    //open the log file in append mode
-            CALL logFileWriter.write("starting session...")
-            CALL logFileWriter.newLine()
-            CALL logFileWriter.flush()
-        CATCH Exception fileOpenError
+            SET logFileWriter = OPEN LOG_FILE_NAME FOR APPENDING
+            WRITE "starting session..." TO logFileWriter
+            WRITE NEW LINE TO logFileWriter
+            FLUSH logFileWriter
+        CATCH Exception
             PRINT "could not open log file..."
-            logFileWriter = NULL                                                       //reset writer so log() knows the file is not open
+            SET logFileWriter = NULL
         END TRY
-    END METHOD open()
+    END METHOD
 
 
-    //Called every time we want a message printed to console AND written to the log file
-    PUBLIC STATIC METHOD log(STRING messageToLog) RETURN VOID
-        PRINT messageToLog                                                             //print to console
-        IF logFileWriter DOES NOT EQUAL NULL THEN
+    PUBLIC STATIC METHOD log(STRING messageToLog)
+        PRINT messageToLog
+
+        IF logFileWriter IS NOT NULL THEN
             TRY
-                CALL logFileWriter.write(messageToLog)
-                CALL logFileWriter.newLine()
-                CALL logFileWriter.flush()
-            CATCH IOException fileWriteError
-                //ignore so the program keeps running even if logging fails
+                WRITE messageToLog TO logFileWriter
+                WRITE NEW LINE TO logFileWriter
+                FLUSH logFileWriter
+            CATCH IOException
+                DO NOTHING
             END TRY
         END IF
-    END METHOD log()
+    END METHOD
 
 
-    PUBLIC STATIC METHOD logBlank() RETURN VOID
-        CALL log("")                                                                   //log an empty line
-    END METHOD logBlank()
+    PUBLIC STATIC METHOD logBlank()
+        CALL log("")
+    END METHOD
 
 
-    PUBLIC STATIC METHOD logSeparator() RETURN VOID
-        CALL log("----------------------------------------")                           //log a divider line
-    END METHOD logSeparator()
-
-
-    PUBLIC STATIC METHOD close() RETURN VOID
-        IF logFileWriter DOES NOT EQUAL NULL THEN
+    PUBLIC STATIC METHOD close()
+        IF logFileWriter IS NOT NULL THEN
             TRY
-                CALL logFileWriter.write("ending session")
-                CALL logFileWriter.newLine()
-                CALL logFileWriter.newLine()                                            //extra blank line between sessions
-                CALL logFileWriter.flush()
-                CALL logFileWriter.close()
-            CATCH IOException fileCloseError
-                //ignore - nothing we can do if closing fails
+                WRITE "ending session" TO logFileWriter
+                WRITE NEW LINE TO logFileWriter
+                WRITE NEW LINE TO logFileWriter
+                FLUSH logFileWriter
+                CLOSE logFileWriter
+            CATCH IOException
+                DO NOTHING
             END TRY
         END IF
-    END METHOD close()
+    END METHOD
 
-END CLASS Logger
+END CLASS

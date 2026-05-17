@@ -1,0 +1,99 @@
+BEGIN PUBLIC CLASS Math
+
+    PUBLIC STATIC METHOD totalReadings(SensorArray readingsToUse) RETURNS INTEGER
+        RETURN readingsToUse.getCount()
+    END METHOD
+
+
+    PUBLIC STATIC METHOD average(SensorArray readingsToUse) RETURNS DOUBLE
+        DECLARE DOUBLE averageValue = 0.0
+        DECLARE INTEGER numberOfReadings = readingsToUse.getCount()
+
+        IF numberOfReadings EQUALS 0 THEN
+            SET averageValue = 0.0
+        ELSE
+            DECLARE DOUBLE runningTotal = 0.0
+
+            FOR i = 0 TO numberOfReadings - 1
+                SET runningTotal = runningTotal + readingsToUse.get(i).getValue()
+            END FOR
+
+            SET averageValue = runningTotal / numberOfReadings
+        END IF
+
+        RETURN averageValue
+    END METHOD
+
+
+    PUBLIC STATIC METHOD minimum(SensorArray readingsToUse) RETURNS DOUBLE
+        DECLARE DOUBLE minimumValue = 0.0
+        DECLARE INTEGER numberOfReadings = readingsToUse.getCount()
+
+        IF numberOfReadings EQUALS 0 THEN
+            SET minimumValue = 0.0
+        ELSE
+            DECLARE DOUBLE smallestSoFar = readingsToUse.get(0).getValue()
+
+            FOR i = 1 TO numberOfReadings - 1
+                IF readingsToUse.get(i).getValue() < smallestSoFar THEN
+                    SET smallestSoFar = readingsToUse.get(i).getValue()
+                END IF
+            END FOR
+
+            SET minimumValue = smallestSoFar
+        END IF
+
+        RETURN minimumValue
+    END METHOD
+
+
+    PUBLIC STATIC METHOD maximum(SensorArray readingsToUse) RETURNS DOUBLE
+        DECLARE DOUBLE maximumValue = 0.0
+        DECLARE INTEGER numberOfReadings = readingsToUse.getCount()
+
+        IF numberOfReadings EQUALS 0 THEN
+            SET maximumValue = 0.0
+        ELSE
+            DECLARE DOUBLE largestSoFar = readingsToUse.get(0).getValue()
+
+            FOR i = 1 TO numberOfReadings - 1
+                IF readingsToUse.get(i).getValue() > largestSoFar THEN
+                    SET largestSoFar = readingsToUse.get(i).getValue()
+                END IF
+            END FOR
+
+            SET maximumValue = largestSoFar
+        END IF
+
+        RETURN maximumValue
+    END METHOD
+
+
+    PUBLIC STATIC METHOD outOfRangeCount(SensorArray readingsToUse) RETURNS INTEGER
+        DECLARE INTEGER numberOutOfRange = 0
+
+        FOR i = 0 TO readingsToUse.getCount() - 1
+            IF readingsToUse.get(i).isOutOfRange() EQUALS TRUE THEN
+                SET numberOutOfRange = numberOutOfRange + 1
+            END IF
+        END FOR
+
+        RETURN numberOutOfRange
+    END METHOD
+
+
+    PUBLIC STATIC METHOD outOfRangePercent(SensorArray readingsToUse) RETURNS DOUBLE
+        DECLARE DOUBLE percentOutOfRange = 0.0
+        DECLARE INTEGER numberOfReadings = readingsToUse.getCount()
+
+        IF numberOfReadings EQUALS 0 THEN
+            SET percentOutOfRange = 0.0
+        ELSE
+            DECLARE INTEGER numberOutOfRange = CALL outOfRangeCount(readingsToUse)
+            SET percentOutOfRange = (numberOutOfRange AS DOUBLE / numberOfReadings) * 100
+        END IF
+
+        RETURN percentOutOfRange
+    END METHOD
+
+END CLASS

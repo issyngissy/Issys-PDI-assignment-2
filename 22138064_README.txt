@@ -1,107 +1,133 @@
-================================================================
-  SMART GREENHOUSE MONITORING SYSTEM
-================================================================
+SMART GREENHOUSE MONITORING SYSTEM
+
+About the program
+
+This is a Java menu program for greenhouse sensor readings. It reads the data
+from data.csv, lets the user check statistics, add a new reading, delete a
+reading, and then saves the data back to the CSV file.
+
+The program also writes the menu output to a file called logged_data.
 
 
-WHAT IT DOES
-============
+Compile
 
-A console program for managing a CSV log of greenhouse sensor
-readings. On startup it loads the CSV into memory, then offers
-a menu to:
-
-  * view stats for the whole greenhouse, a single zone, or a
-    single sensor type (total, average, min, max, count of
-    readings outside the safe range, and that count as a
-    percentage)
-  * add a new reading (with validation, written back to the CSV)
-  * delete an existing reading (also written back to the CSV)
-  * exit
-
-Each reading is one CSV row holding a timestamp, sensor ID,
-sensor type, zone, and value. The four supported sensor types
-are temperature, humidity, soilMoisture, and light. Each type has
-a hard-coded safe range and any reading outside its range is
-flagged.
-
-
-DEPENDENCIES
-============
-
-  * Java JDK 11 or newer (tested on JDK 17)
-  * Java Standard library  
-
-The only `java.io` classes used are BufferedReader, BufferedWriter,
-FileReader, FileWriter, InputStreamReader, and IOException.
-
-
-COMPILE (Linux terminal)
-========================
-
-From the project root:
+Run this from the project folder:
 
     javac -d bin Java/*.java
 
-This compiles every `.java` file under `Java/` and writes the
-resulting `.class` files into `bin/`. The `bin/` directory is
-created if it does not already exist.
+This puts the compiled class files in the bin folder.
 
 
-RUN
-===
+Run
 
-From the project root, after compiling:
+After compiling, run:
 
     java -cp bin Main
 
-The menu opens in the terminal. Pick options by typing the
-matching number and pressing Enter.
+The menu should then appear in the terminal.
 
 
-FILE STRUCTURE
-==============
+Menu options
 
-The CSV file must sit in the working directory you launch the
-program from. It must be named exactly:
+1. Overall statistics
+2. Statistics by zone
+3. Statistics by sensor type
+4. Add a reading
+5. Delete a reading
+6. Exit
+
+The statistics submenu can show the total, average, minimum, maximum, number
+outside the safe range, and percentage outside the safe range.
+
+
+CSV file
+
+The file must be called:
 
     data.csv
 
-The expected layout when running from the project root looks
-like this:
+It needs to be in the folder that the program is run from.
 
-    PDI Portfolio/
-        Java/                          (source files)
-            Main.java
-            Menu.java
-            Logger.java
-            SensorArray.java
-            SensorReading.java
-            GreenhouseDataStorage.java
-        bin/                           (compiled .class files)
-        data.csv                       (required, in the cwd)
-        logged_data                    (created on first run)
-
-CSV format. The header row is required and is skipped on load:
+The header is:
 
     day,month,year,hour,minute,sensorID,sensorType,zone,value
+
+Example:
+
     15,5,2026,14,30,TMP100,temperature,ZoneA,22.5
-    ...
 
-If `data.csv` is missing, the program prints a warning and
-starts with an empty in-memory array. Adding a reading from the
-menu will create the file.
+The first line is treated as the header and is skipped when the file is loaded.
 
 
-LOG FILE
-========
+Sensor types
 
-Every line printed to the terminal is also written to a plain
-text log file named:
+The program uses these sensor types:
+
+- temperature
+- humidity
+- soilMoisture
+- light
+
+The menu uses these zones:
+
+- ZoneA
+- ZoneB
+- ZoneC
+
+Safe ranges are checked in SensorReading.java:
+
+- temperature: 18.0 to 30.0
+- humidity: 40.0 to 70.0
+- soilMoisture: 30.0 to 60.0
+- light: 300.0 to 1200.0
+
+
+Files
+
+Java/Main.java
+Starts the program, opens the logger, loads the CSV file, starts the menu, and
+closes the logger at the end.
+
+Java/Menu.java
+Contains the main menu and most of the user input code.
+
+Java/GreenhouseDataStorage.java
+Loads data.csv and saves the readings back to data.csv.
+
+Java/SensorArray.java
+Stores the readings in an array. It also adds, deletes, filters, counts, and
+checks for duplicate sensor IDs.
+
+Java/SensorReading.java
+Stores one sensor reading and checks if it is outside the safe range.
+
+Java/Timestamp.java
+Stores the day, month, year, hour, and minute for a reading.
+
+Java/Math.java
+Does the statistics calculations.
+
+Java/Validator.java
+Checks input values before they are used.
+
+Java/Logger.java
+Prints messages to the screen and writes the same messages to logged_data.
+
+
+Logging
+
+The log file is:
 
     logged_data
 
-The log file lives in the same working directory as `data.csv`.
-Each run appends to it. Sessions are bracketed by the lines
-`starting session...` and `ending session`, so individual runs
-can be picked out by eye. Delete the file to clear it. It will
-be recreated on the next run.
+The program appends to this file each time it runs. If the file is deleted, the
+program will make it again the next time it runs.
+
+
+Notes
+
+The program checks for empty values, invalid numbers, invalid dates, invalid
+times, invalid sensor types, and duplicate sensor IDs.
+
+The date check is basic. It checks that the day is between 1 and 31 and the
+month is between 1 and 12, but it does not check every real calendar date.

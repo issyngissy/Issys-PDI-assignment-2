@@ -1,0 +1,97 @@
+BEGIN PUBLIC CLASS Timestamp
+
+    DECLARE PRIVATE INTEGER dayOfMonth
+    DECLARE PRIVATE INTEGER monthOfYear
+    DECLARE PRIVATE INTEGER year
+    DECLARE PRIVATE INTEGER hour
+    DECLARE PRIVATE INTEGER minute
+
+
+    CONSTRUCTOR Timestamp()
+        SET dayOfMonth = 0
+        SET monthOfYear = 0
+        SET year = 0
+        SET hour = 0
+        SET minute = 0
+    END CONSTRUCTOR
+
+
+    CONSTRUCTOR Timestamp(INTEGER dayOfMonth, INTEGER monthOfYear, INTEGER year, INTEGER hour, INTEGER minute)
+        SET this.dayOfMonth = dayOfMonth
+        SET this.monthOfYear = monthOfYear
+        SET this.year = year
+        SET this.hour = hour
+        SET this.minute = minute
+    END CONSTRUCTOR
+
+
+    CONSTRUCTOR Timestamp(Timestamp sourceTimestamp)
+        SET this.dayOfMonth = sourceTimestamp.dayOfMonth
+        SET this.monthOfYear = sourceTimestamp.monthOfYear
+        SET this.year = sourceTimestamp.year
+        SET this.hour = sourceTimestamp.hour
+        SET this.minute = sourceTimestamp.minute
+    END CONSTRUCTOR
+
+
+    PUBLIC METHOD getDayOfMonth() RETURNS INTEGER
+        RETURN dayOfMonth
+    END METHOD
+
+    PUBLIC METHOD getMonthOfYear() RETURNS INTEGER
+        RETURN monthOfYear
+    END METHOD
+
+    PUBLIC METHOD getYear() RETURNS INTEGER
+        RETURN year
+    END METHOD
+
+    PUBLIC METHOD getHour() RETURNS INTEGER
+        RETURN hour
+    END METHOD
+
+    PUBLIC METHOD getMinute() RETURNS INTEGER
+        RETURN minute
+    END METHOD
+
+
+    PUBLIC METHOD setDayOfMonth(INTEGER dayOfMonth)
+        SET this.dayOfMonth = dayOfMonth
+    END METHOD
+
+    PUBLIC METHOD setMonthOfYear(INTEGER monthOfYear)
+        SET this.monthOfYear = monthOfYear
+    END METHOD
+
+    PUBLIC METHOD setYear(INTEGER year)
+        SET this.year = year
+    END METHOD
+
+    PUBLIC METHOD setHour(INTEGER hour)
+        SET this.hour = hour
+    END METHOD
+
+    PUBLIC METHOD setMinute(INTEGER minute)
+        SET this.minute = minute
+    END METHOD
+
+
+    PUBLIC METHOD toString() RETURNS STRING
+        DECLARE STRING dayPadded = CALL padWithLeadingZero(dayOfMonth)
+        DECLARE STRING monthPadded = CALL padWithLeadingZero(monthOfYear)
+        DECLARE STRING hourPadded = CALL padWithLeadingZero(hour)
+        DECLARE STRING minutePadded = CALL padWithLeadingZero(minute)
+
+        RETURN dayPadded + "/" + monthPadded + "/" + year + " " + hourPadded + ":" + minutePadded
+    END METHOD
+
+
+    PRIVATE METHOD padWithLeadingZero(INTEGER numberToPad) RETURNS STRING
+        IF numberToPad < 10 THEN
+            RETURN "0" + numberToPad
+        ELSE
+            RETURN "" + numberToPad
+        END IF
+    END METHOD
+
+END CLASS

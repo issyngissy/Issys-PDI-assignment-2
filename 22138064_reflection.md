@@ -1,21 +1,67 @@
-# Reflection on Building the Smart Greenhouse Monitoring System
+# Reflection
 
-## Data types
+## Data choices
 
-The data types fall out of what each field actually is. Day, month, year, hour, and minute are whole counts of things, so they are `int`. Sensor values can be fractional (a moisture probe might read 47.3), so those are `double`. Sensor IDs, zone names, and sensor types are `String`, because they are labels and there is no arithmetic I would ever do on `"ZoneA"`. Keeping the date pieces as `int` also made the range checks cheap: `day >= 1 && day <= 31` works directly, with no parsing.
+I used `int` for the day, month, year, hour, and minute because those values are
+whole numbers. I used `double` for the sensor value because readings can have
+decimal places. I used `String` for sensor ID, sensor type, and zone because
+they are names or labels.
+
+I made `Timestamp` its own class because the date and time belong together. It
+also means the formatting code for the timestamp is not mixed into
+`SensorReading`.
 
 ## Class structure
 
-Composition over inheritance was the main decision. A `SensorReading` has-a `Timestamp`, and the timestamp has its own formatting logic (zero-padded `dd/mm/yyyy hh:mm`), so it earned its own class. Each value class has three constructors: a default that zero-initialises, a full one that takes every field, and a copy constructor. The copy constructor for `SensorReading` does a deep copy of the embedded `Timestamp`, which I almost forgot about. If I had passed the existing reference instead, two readings would share one timestamp object and mutating one would silently corrupt the other. Every field has a public accessor and mutator, even ones nothing currently calls, so encapsulation stays consistent across the class.
+I tried to keep each class focused on one job. `Main` starts everything.
+`Menu` deals with user choices. `GreenhouseDataStorage` loads and saves the CSV
+file. `SensorArray` stores the readings. `Math` does the statistics.
+`Validator` checks input.
 
-## Menu system
+At first I had more statistic methods inside `SensorArray`, but that made the
+class do too much. Moving the calculations into `Math` made the program easier
+to follow, because `SensorArray` is now mostly about storing and finding
+readings.
 
-The menu is one `while` loop in `Menu.run()`, controlled by a `boolean menuIsRunning` flag, with an `if/else if` chain dispatching to six handler methods. I avoided `switch` so the dispatch looks the same as the other branching code in the project. For input I wrote four reusable readers (`readIntegerInRange`, `readDoubleNumber`, `readNonEmptyString`, `readValidSensorType`), each looping on its own `inputAccepted` flag until the `Validator` class approves the input. Statistics share one sub-menu method that takes whatever filtered `SensorArray` slice it is given, which stopped the three "overall, by zone, by type" handlers from duplicating seven stat options each.
+## Menu design
 
-## Challenges
+The menu uses a `while` loop and an `if / else if` chain. This is simple, but it
+is also easy to read. I kept the zones and sensor types hardcoded because the
+program only needs ZoneA, ZoneB, ZoneC, and the four sensor types from the data.
 
-The hardest bug was inside `SensorArray.minimum()` and `maximum()`. I had written `return min;` inside the `for` loop, so the method exited on its first iteration with the wrong answer. The same mistake also lived in `getDistinctZones`, `getDistinctTypes`, and `distinctValues`. Refactoring every method to use a single `result` variable assigned through `if/else` branches fixed the whole family of bugs and made each method easier to read. Splitting CSV lines by hand (counting commas, tracking start positions) was fiddly, but doing it manually forced me to think through what trailing commas and empty fields should produce.
+This also meant I could remove the older code that worked out distinct zones and
+sensor types from the CSV file. That code worked, but it was not really needed
+anymore.
 
-## What I would improve
+When a reading is added or deleted, the program saves the whole array back to
+data.csv. This is needed because changing the array in memory does not update
+the file by itself.
 
-Date validation does not reject February 30, which it should. The four input readers belong in their own `InputReader` class instead of cluttering `Menu`. JUnit tests would beat a manual test plan. I would also add an edit option, since editing a row currently means deleting it and re-typing every field, and editing is the most common real-world action.
+## Validation
+
+The validation code is in `Validator`, so the same checks can be reused in the
+CSV loading code and the menu input code. This helped keep the rules in one
+place instead of spreading them across the program.
+
+The duplicate sensor ID check is in `SensorArray.hasSensorID()`. I kept it
+there because `SensorArray` is the class that stores all the readings, so it
+makes sense for it to search through them.
+
+## Problems I fixed
+
+One issue was that changing menu options to hardcoded choices made some old code
+unnecessary. The distinct zone and distinct sensor type methods were removed
+because the menu no longer needs to build those lists from the CSV file.
+
+Another issue was saving. I realised that adding a reading to `SensorArray` only
+changes the program while it is running. `saveCSV()` has to be called if the
+change should stay in data.csv.
+
+## Improvements
+
+The date validation could be better. Right now it accepts 31 as a day for every
+month. A better version would check the actual month and reject dates like 31
+April.
+
+I would also add an edit option. At the moment, the user has to delete a reading
+and add it again if one field is wrong.

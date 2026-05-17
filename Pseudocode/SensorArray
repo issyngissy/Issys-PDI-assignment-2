@@ -1,201 +1,104 @@
 BEGIN PUBLIC CLASS SensorArray
 
-    DECLARE PRIVATE STATIC FINAL INTEGER: INITIAL_CAPACITY        = 100
-    DECLARE PRIVATE STATIC FINAL INTEGER: CAPACITY_GROWTH_FACTOR  = 2
+    DECLARE PRIVATE STATIC FINAL INTEGER INITIAL_CAPACITY = 100
+    DECLARE PRIVATE STATIC FINAL INTEGER CAPACITY_GROWTH_FACTOR = 2
 
-    DECLARE PRIVATE SensorReading ARRAY: readings
-    DECLARE PRIVATE INTEGER:             numberOfReadings
+    DECLARE PRIVATE ARRAY OF SensorReading readings
+    DECLARE PRIVATE INTEGER numberOfReadings
 
 
     CONSTRUCTOR SensorArray()
-        readings         = NEW SensorReading ARRAY WITH SIZE INITIAL_CAPACITY
-        numberOfReadings = 0
+        SET readings = NEW SensorReading ARRAY WITH SIZE INITIAL_CAPACITY
+        SET numberOfReadings = 0
     END CONSTRUCTOR
 
 
-    PUBLIC METHOD add(SensorReading newReading) RETURN VOID
+    PUBLIC METHOD add(SensorReading newReading)
         IF numberOfReadings EQUALS readings.length THEN
-            CALL growArray()                                       //grow the array when it fills up
+            CALL growArray()
         END IF
-        readings[numberOfReadings] = newReading
-        numberOfReadings = numberOfReadings + 1
-    END METHOD add()
+
+        SET readings[numberOfReadings] = newReading
+        SET numberOfReadings = numberOfReadings + 1
+    END METHOD
 
 
-    PUBLIC METHOD deleteAt(INTEGER indexToDelete) RETURN VOID
+    PUBLIC METHOD deleteAt(INTEGER indexToDelete)
         IF indexToDelete < 0 OR indexToDelete >= numberOfReadings THEN
-            THROW NEW IllegalArgumentException("Index out of bounds: " + indexToDelete)
+            THROW IllegalArgumentException
         END IF
-        //shift every reading after indexToDelete one slot to the left
+
         FOR i = indexToDelete TO numberOfReadings - 2
-            readings[i] = readings[i + 1]
+            SET readings[i] = readings[i + 1]
         END FOR
-        numberOfReadings = numberOfReadings - 1
-        readings[numberOfReadings] = NULL
-    END METHOD deleteAt()
+
+        SET numberOfReadings = numberOfReadings - 1
+        SET readings[numberOfReadings] = NULL
+    END METHOD
 
 
-    PUBLIC METHOD get(INTEGER indexToFetch) RETURN SensorReading
+    PUBLIC METHOD get(INTEGER indexToFetch) RETURNS SensorReading
         IF indexToFetch < 0 OR indexToFetch >= numberOfReadings THEN
-            THROW NEW IllegalArgumentException("Index out of bounds: " + indexToFetch)
+            THROW IllegalArgumentException
         END IF
+
         RETURN readings[indexToFetch]
-    END METHOD get()
+    END METHOD
 
 
-    PUBLIC METHOD getCount() RETURN INTEGER
+    PUBLIC METHOD getCount() RETURNS INTEGER
         RETURN numberOfReadings
-    END METHOD getCount()
+    END METHOD
 
 
-    PUBLIC METHOD totalReadings() RETURN INTEGER
-        RETURN numberOfReadings
-    END METHOD totalReadings()
+    PUBLIC METHOD hasSensorID(STRING sensorIDToFind) RETURNS BOOLEAN
+        DECLARE BOOLEAN sensorIDAlreadyExists = FALSE
+
+        FOR i = 0 TO numberOfReadings - 1
+            IF readings[i].getSensorID() EQUALS sensorIDToFind THEN
+                SET sensorIDAlreadyExists = TRUE
+            END IF
+        END FOR
+
+        RETURN sensorIDAlreadyExists
+    END METHOD
 
 
-    PUBLIC METHOD filterByZone(STRING zoneToMatch) RETURN SensorArray
-        DECLARE SensorArray: matchingReadings = NEW SensorArray()
+    PUBLIC METHOD filterByZone(STRING zoneToMatch) RETURNS SensorArray
+        DECLARE SensorArray matchingReadings = NEW SensorArray()
+
         FOR i = 0 TO numberOfReadings - 1
             IF readings[i].getZone() EQUALS zoneToMatch THEN
                 CALL matchingReadings.add(readings[i])
             END IF
         END FOR
+
         RETURN matchingReadings
-    END METHOD filterByZone()
+    END METHOD
 
 
-    PUBLIC METHOD filterBySensorType(STRING typeToMatch) RETURN SensorArray
-        DECLARE SensorArray: matchingReadings = NEW SensorArray()
+    PUBLIC METHOD filterBySensorType(STRING typeToMatch) RETURNS SensorArray
+        DECLARE SensorArray matchingReadings = NEW SensorArray()
+
         FOR i = 0 TO numberOfReadings - 1
             IF readings[i].getSensorType() EQUALS typeToMatch THEN
                 CALL matchingReadings.add(readings[i])
             END IF
         END FOR
+
         RETURN matchingReadings
-    END METHOD filterBySensorType()
+    END METHOD
 
 
-    PUBLIC METHOD average() RETURN DOUBLE
-        DECLARE DOUBLE: averageValue = 0.0
-        IF numberOfReadings EQUALS 0 THEN
-            averageValue = 0.0
-        ELSE
-            DECLARE DOUBLE: runningTotal = 0.0
-            FOR i = 0 TO numberOfReadings - 1
-                runningTotal = runningTotal + readings[i].getValue()
-            END FOR
-            averageValue = runningTotal / numberOfReadings
-        END IF
-        RETURN averageValue
-    END METHOD average()
+    PRIVATE METHOD growArray()
+        DECLARE INTEGER expandedCapacity = readings.length * CAPACITY_GROWTH_FACTOR
+        DECLARE ARRAY OF SensorReading expandedReadings = NEW SensorReading ARRAY WITH SIZE expandedCapacity
 
-
-    PUBLIC METHOD minimum() RETURN DOUBLE
-        DECLARE DOUBLE: minimumValue = 0.0
-        IF numberOfReadings EQUALS 0 THEN
-            minimumValue = 0.0
-        ELSE
-            DECLARE DOUBLE: smallestSoFar = readings[0].getValue()
-            FOR i = 1 TO numberOfReadings - 1
-                IF readings[i].getValue() < smallestSoFar THEN
-                    smallestSoFar = readings[i].getValue()
-                END IF
-            END FOR
-            minimumValue = smallestSoFar
-        END IF
-        RETURN minimumValue
-    END METHOD minimum()
-
-
-    PUBLIC METHOD maximum() RETURN DOUBLE
-        DECLARE DOUBLE: maximumValue = 0.0
-        IF numberOfReadings EQUALS 0 THEN
-            maximumValue = 0.0
-        ELSE
-            DECLARE DOUBLE: largestSoFar = readings[0].getValue()
-            FOR i = 1 TO numberOfReadings - 1
-                IF readings[i].getValue() > largestSoFar THEN
-                    largestSoFar = readings[i].getValue()
-                END IF
-            END FOR
-            maximumValue = largestSoFar
-        END IF
-        RETURN maximumValue
-    END METHOD maximum()
-
-
-    PUBLIC METHOD outOfRangeCount() RETURN INTEGER
-        DECLARE INTEGER: numberOutOfRange = 0
         FOR i = 0 TO numberOfReadings - 1
-            IF readings[i].isOutOfRange() EQUALS TRUE THEN
-                numberOutOfRange = numberOutOfRange + 1
-            END IF
+            SET expandedReadings[i] = readings[i]
         END FOR
-        RETURN numberOutOfRange
-    END METHOD outOfRangeCount()
 
+        SET readings = expandedReadings
+    END METHOD
 
-    PUBLIC METHOD outOfRangePercent() RETURN DOUBLE
-        DECLARE DOUBLE: percentOutOfRange = 0.0
-        IF numberOfReadings EQUALS 0 THEN
-            percentOutOfRange = 0.0
-        ELSE
-            DECLARE INTEGER: numberOutOfRange = CALL outOfRangeCount()
-            percentOutOfRange = ((DOUBLE) numberOutOfRange / numberOfReadings) * 100
-        END IF
-        RETURN percentOutOfRange
-    END METHOD outOfRangePercent()
-
-
-    PUBLIC METHOD getDistinctZones() RETURN STRING ARRAY
-        DECLARE STRING ARRAY: allZonesIncludingDuplicates = NEW STRING ARRAY WITH SIZE numberOfReadings
-        FOR i = 0 TO numberOfReadings - 1
-            allZonesIncludingDuplicates[i] = readings[i].getZone()
-        END FOR
-        RETURN CALL getUniqueValues(allZonesIncludingDuplicates)
-    END METHOD getDistinctZones()
-
-
-    PUBLIC METHOD getDistinctTypes() RETURN STRING ARRAY
-        DECLARE STRING ARRAY: allTypesIncludingDuplicates = NEW STRING ARRAY WITH SIZE numberOfReadings
-        FOR i = 0 TO numberOfReadings - 1
-            allTypesIncludingDuplicates[i] = readings[i].getSensorType()
-        END FOR
-        RETURN CALL getUniqueValues(allTypesIncludingDuplicates)
-    END METHOD getDistinctTypes()
-
-
-    PRIVATE METHOD getUniqueValues(STRING ARRAY valuesWithDuplicates) RETURN STRING ARRAY
-        DECLARE STRING ARRAY: uniqueValueBuffer    = NEW STRING ARRAY WITH SIZE valuesWithDuplicates.length
-        DECLARE INTEGER:      numberOfUniqueValues = 0
-        FOR i = 0 TO valuesWithDuplicates.length - 1
-            DECLARE BOOLEAN: alreadySeen = FALSE
-            FOR j = 0 TO numberOfUniqueValues - 1
-                IF uniqueValueBuffer[j] EQUALS valuesWithDuplicates[i] THEN
-                    alreadySeen = TRUE
-                END IF
-            END FOR
-            IF alreadySeen EQUALS FALSE THEN
-                uniqueValueBuffer[numberOfUniqueValues] = valuesWithDuplicates[i]
-                numberOfUniqueValues = numberOfUniqueValues + 1
-            END IF
-        END FOR
-        //copy the unique values into a properly sized array
-        DECLARE STRING ARRAY: uniqueValuesTrimmed = NEW STRING ARRAY WITH SIZE numberOfUniqueValues
-        FOR i = 0 TO numberOfUniqueValues - 1
-            uniqueValuesTrimmed[i] = uniqueValueBuffer[i]
-        END FOR
-        RETURN uniqueValuesTrimmed
-    END METHOD getUniqueValues()
-
-
-    PRIVATE METHOD growArray() RETURN VOID
-        DECLARE INTEGER:             expandedCapacity = readings.length * CAPACITY_GROWTH_FACTOR
-        DECLARE SensorReading ARRAY: expandedReadings = NEW SensorReading ARRAY WITH SIZE expandedCapacity
-        FOR i = 0 TO numberOfReadings - 1
-            expandedReadings[i] = readings[i]
-        END FOR
-        readings = expandedReadings
-    END METHOD growArray()
-
-END CLASS SensorArray
+END CLASS

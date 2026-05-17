@@ -1,18 +1,19 @@
 BEGIN PUBLIC CLASS Main
 
-    DECLARE PRIVATE STATIC FINAL STRING: CSV_FILE = "data.csv"
+    DECLARE PRIVATE STATIC FINAL STRING CSV_FILE = "data.csv"
 
-    PUBLIC STATIC VOID main(String[] args)
-        CALL Logger.open()                                              //open the log file
+    PUBLIC STATIC METHOD main(args)
+        CALL Logger.open()
 
-        DECLARE SensorArray: readings
-        SET readings = CALL GreenhouseDataStorage.loadCSV(CSV_FILE)     //load every row of the CSV into a SensorArray
+        DECLARE SensorArray loadedReadings
+        SET loadedReadings = CALL GreenhouseDataStorage.loadCSV(CSV_FILE)
 
-        DECLARE Menu: menu
-        SET menu = NEW Menu(readings)                                   //hand the loaded readings to the menu
-        CALL menu.run()                                                 //run the main menu loop until the user exits
+        DECLARE Menu menu
+        SET menu = NEW Menu(loadedReadings, CSV_FILE)
 
-        CALL Logger.close()                                             //close the log file
-    END main()
+        CALL menu.run()
 
-END CLASS Main
+        CALL Logger.close()
+    END METHOD
+
+END CLASS

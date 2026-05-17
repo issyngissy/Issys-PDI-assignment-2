@@ -1,37 +1,23 @@
-IMPORT java.io.BufferedReader, java.io.IOException, java.io.InputStreamReader
-
-
 BEGIN PUBLIC CLASS Menu
 
-    DECLARE PRIVATE STATIC FINAL STRING: CSV_FILE = "data.csv"
+    DECLARE PRIVATE BufferedReader consoleInputReader
+    DECLARE PRIVATE SensorArray loadedReadings
+    DECLARE PRIVATE STRING csvFilename
 
-    DECLARE PRIVATE BufferedReader: consoleInputReader
-    DECLARE PRIVATE SensorArray:    loadedReadings
 
-
-    CONSTRUCTOR Menu(SensorArray loadedReadings)
-        this.loadedReadings     = loadedReadings
-        this.consoleInputReader = NEW BufferedReader(NEW InputStreamReader(System.in))
+    CONSTRUCTOR Menu(SensorArray loadedReadings, STRING csvFilename)
+        SET this.loadedReadings = loadedReadings
+        SET this.csvFilename = csvFilename
+        SET this.consoleInputReader = NEW BufferedReader(NEW InputStreamReader(System.in))
     END CONSTRUCTOR
 
 
-    PUBLIC METHOD run() RETURN VOID
-        DECLARE BOOLEAN: menuIsRunning = TRUE
+    PUBLIC METHOD run()
+        DECLARE BOOLEAN menuIsRunning = TRUE
 
         WHILE menuIsRunning EQUALS TRUE
-            CALL Logger.logBlank()
-            CALL Logger.logSeparator()
-            CALL Logger.log("Welcome to the Smart Greenhouse monitoring system")
-            CALL Logger.log("Please select an option: ")
-            CALL Logger.log(" 1. Statistics for the entire Greenhouse")
-            CALL Logger.log(" 2. Statistics by zone")
-            CALL Logger.log(" 3. Statistics by sensor type")
-            CALL Logger.log(" 4. Add data readings")
-            CALL Logger.log(" 5. Delete data readings")
-            CALL Logger.log(" 6. Exit program")
-            CALL Logger.logSeparator()
-
-            DECLARE INTEGER: userChoice = CALL readIntegerInRange("enter choice: ", 1, 6)
+            CALL showMainMenu()
+            DECLARE INTEGER userChoice = CALL readIntegerInRange("choice: ", 1, 6)
 
             IF userChoice EQUALS 1 THEN
                 CALL handleOverallStats()
@@ -44,212 +30,237 @@ BEGIN PUBLIC CLASS Menu
             ELSE IF userChoice EQUALS 5 THEN
                 CALL handleDeleteReading()
             ELSE IF userChoice EQUALS 6 THEN
-                menuIsRunning = FALSE
+                SET menuIsRunning = FALSE
             END IF
         END WHILE
-    END METHOD run()
+    END METHOD
 
 
-    PRIVATE METHOD handleOverallStats() RETURN VOID
-        CALL showStatsSubMenu(loadedReadings, "entire greenhouse")
-    END METHOD handleOverallStats()
-
-
-    PRIVATE METHOD handleStatsByZone() RETURN VOID
-        DECLARE STRING ARRAY: availableZones = CALL loadedReadings.getDistinctZones()
-        IF availableZones.length EQUALS 0 THEN
-            CALL Logger.log("No zones available.")
-        ELSE
-            CALL Logger.logBlank()
-            CALL Logger.log("Available zones:")
-            FOR i = 0 TO availableZones.length - 1
-                CALL Logger.log(" " + (i + 1) + ". " + availableZones[i])
-            END FOR
-
-            DECLARE INTEGER:     userSelection      = CALL readIntegerInRange("select zone: ", 1, availableZones.length)
-            DECLARE STRING:      selectedZone       = availableZones[userSelection - 1]
-            DECLARE SensorArray: filteredReadings   = CALL loadedReadings.filterByZone(selectedZone)
-            CALL showStatsSubMenu(filteredReadings, "zone " + selectedZone)
-        END IF
-    END METHOD handleStatsByZone()
-
-
-    PRIVATE METHOD handleStatsByType() RETURN VOID
-        DECLARE STRING ARRAY: availableSensorTypes = CALL loadedReadings.getDistinctTypes()
-        IF availableSensorTypes.length EQUALS 0 THEN
-            CALL Logger.log("No sensor types available.")
-        ELSE
-            CALL Logger.logBlank()
-            CALL Logger.log("Available sensor types:")
-            FOR i = 0 TO availableSensorTypes.length - 1
-                CALL Logger.log(" " + (i + 1) + ". " + availableSensorTypes[i])
-            END FOR
-
-            DECLARE INTEGER:     userSelection       = CALL readIntegerInRange("select type: ", 1, availableSensorTypes.length)
-            DECLARE STRING:      selectedSensorType  = availableSensorTypes[userSelection - 1]
-            DECLARE SensorArray: filteredReadings    = CALL loadedReadings.filterBySensorType(selectedSensorType)
-            CALL showStatsSubMenu(filteredReadings, "type " + selectedSensorType)
-        END IF
-    END METHOD handleStatsByType()
-
-
-    PRIVATE METHOD handleAddReading() RETURN VOID
+    PRIVATE METHOD showMainMenu()
         CALL Logger.logBlank()
-        DECLARE STRING:  sensorID    = CALL readNonEmptyString("sensor ID: ")
-        DECLARE STRING:  sensorType  = CALL readValidSensorType()
-        DECLARE STRING:  zone        = CALL readNonEmptyString("zone: ")
-        DECLARE DOUBLE:  sensorValue = CALL readDoubleNumber("value: ")
-        DECLARE INTEGER: day         = CALL readIntegerInRange("day (1-31): ",        1,    31)
-        DECLARE INTEGER: month       = CALL readIntegerInRange("month (1-12): ",      1,    12)
-        DECLARE INTEGER: year        = CALL readIntegerInRange("year (2000-2100): ",  2000, 2100)
-        DECLARE INTEGER: hour        = CALL readIntegerInRange("hour (0-23): ",       0,    23)
-        DECLARE INTEGER: minute      = CALL readIntegerInRange("minute (0-59): ",     0,    59)
+        CALL Logger.log("Main menu")
+        CALL Logger.log("1. overall statistics")
+        CALL Logger.log("2. stats by zone")
+        CALL Logger.log("3. stats by sensor type")
+        CALL Logger.log("4. add a reading")
+        CALL Logger.log("5. delete a reading")
+        CALL Logger.log("6. exit")
+    END METHOD
 
-        DECLARE Timestamp:     newReadingTimestamp = NEW Timestamp(day, month, year, hour, minute)
-        DECLARE SensorReading: newReading          = NEW SensorReading(sensorID, sensorType, zone, sensorValue, newReadingTimestamp)
+
+    PRIVATE METHOD handleOverallStats()
+        CALL showStatsSubMenu(loadedReadings, "entire greenhouse")
+    END METHOD
+
+
+    PRIVATE METHOD handleStatsByZone()
+        DECLARE STRING selectedZone = CALL readValidZone()
+        DECLARE SensorArray filteredReadings = CALL loadedReadings.filterByZone(selectedZone)
+        CALL showStatsSubMenu(filteredReadings, "zone " + selectedZone)
+    END METHOD
+
+
+    PRIVATE METHOD readValidZone() RETURNS STRING
+        DECLARE STRING ARRAY zones = {"ZoneA", "ZoneB", "ZoneC"}
+
+        CALL Logger.logBlank()
+        CALL Logger.log("Select zone")
+
+        FOR i = 0 TO zones.length - 1
+            CALL Logger.log((i + 1) + ". " + zones[i])
+        END FOR
+
+        DECLARE INTEGER userSelection = CALL readIntegerInRange("zone: ", 1, zones.length)
+        RETURN zones[userSelection - 1]
+    END METHOD
+
+
+    PRIVATE METHOD handleStatsByType()
+        DECLARE STRING selectedSensorType = CALL readValidSensorType()
+        DECLARE SensorArray filteredReadings = CALL loadedReadings.filterBySensorType(selectedSensorType)
+        CALL showStatsSubMenu(filteredReadings, "type " + selectedSensorType)
+    END METHOD
+
+
+    PRIVATE METHOD readValidSensorType() RETURNS STRING
+        DECLARE STRING ARRAY sensorTypes = {"temperature", "humidity", "soilMoisture", "light"}
+
+        CALL Logger.logBlank()
+        CALL Logger.log("Select sensor type")
+
+        FOR i = 0 TO sensorTypes.length - 1
+            CALL Logger.log((i + 1) + ". " + sensorTypes[i])
+        END FOR
+
+        DECLARE INTEGER userSelection = CALL readIntegerInRange("type: ", 1, sensorTypes.length)
+        RETURN sensorTypes[userSelection - 1]
+    END METHOD
+
+
+    PRIVATE METHOD handleAddReading()
+        CALL Logger.logBlank()
+        CALL Logger.log("Add new reading")
+
+        DECLARE STRING sensorID = CALL readNonEmptyString("sensor ID: ")
+
+        WHILE loadedReadings.hasSensorID(sensorID) EQUALS TRUE
+            CALL Logger.log("That sensor ID is already in the data.")
+            SET sensorID = CALL readNonEmptyString("sensor ID: ")
+        END WHILE
+
+        DECLARE STRING sensorType = CALL readValidSensorType()
+        DECLARE STRING zone = CALL readValidZone()
+        DECLARE DOUBLE sensorValue = CALL readDoubleNumber("value: ")
+
+        DECLARE INTEGER day = CALL readIntegerInRange("day (1-31): ", 1, 31)
+        DECLARE INTEGER month = CALL readIntegerInRange("month (1-12): ", 1, 12)
+        DECLARE INTEGER year = CALL readIntegerInRange("year (2000-2100): ", 2000, 2100)
+        DECLARE INTEGER hour = CALL readIntegerInRange("hour (0-23): ", 0, 23)
+        DECLARE INTEGER minute = CALL readIntegerInRange("minute (0-59): ", 0, 59)
+
+        DECLARE Timestamp newReadingTimestamp = NEW Timestamp(day, month, year, hour, minute)
+        DECLARE SensorReading newReading = NEW SensorReading(sensorID, sensorType, zone, sensorValue, newReadingTimestamp)
+
         CALL loadedReadings.add(newReading)
-        CALL GreenhouseDataStorage.saveCSV(CSV_FILE, loadedReadings)        //persist immediately so we don't lose the new row
-        CALL Logger.log("Reading added: " + newReading)
-    END METHOD handleAddReading()
+        CALL Logger.log("Added: " + newReading)
+        CALL GreenhouseDataStorage.saveCSV(csvFilename, loadedReadings)
+    END METHOD
 
 
-    PRIVATE METHOD handleDeleteReading() RETURN VOID
+    PRIVATE METHOD handleDeleteReading()
         IF loadedReadings.getCount() EQUALS 0 THEN
             CALL Logger.log("No readings to delete.")
         ELSE
             CALL Logger.logBlank()
+            CALL Logger.log("Current readings")
+
             FOR i = 0 TO loadedReadings.getCount() - 1
-                CALL Logger.log(" " + (i + 1) + ". " + loadedReadings.get(i))
+                CALL Logger.log((i + 1) + ". " + loadedReadings.get(i))
             END FOR
 
-            DECLARE INTEGER:       userSelection   = CALL readIntegerInRange("select reading to delete: ", 1, loadedReadings.getCount())
-            DECLARE SensorReading: removedReading  = CALL loadedReadings.get(userSelection - 1)
+            DECLARE INTEGER userSelection = CALL readIntegerInRange("delete number: ", 1, loadedReadings.getCount())
+            DECLARE SensorReading removedReading = CALL loadedReadings.get(userSelection - 1)
+
             CALL loadedReadings.deleteAt(userSelection - 1)
-            CALL GreenhouseDataStorage.saveCSV(CSV_FILE, loadedReadings)    //persist immediately after the delete
             CALL Logger.log("Deleted: " + removedReading)
+            CALL GreenhouseDataStorage.saveCSV(csvFilename, loadedReadings)
         END IF
-    END METHOD handleDeleteReading()
+    END METHOD
 
 
-    PRIVATE METHOD showStatsSubMenu(SensorArray filteredReadings, STRING contextLabel) RETURN VOID
+    PRIVATE METHOD showStatsSubMenu(SensorArray filteredReadings, STRING contextLabel)
         CALL Logger.logBlank()
-        CALL Logger.log("Statistics for " + contextLabel + ":")
-        CALL Logger.log(" 1. Total number of readings")
-        CALL Logger.log(" 2. Average value")
-        CALL Logger.log(" 3. Minimum value")
-        CALL Logger.log(" 4. Maximum value")
-        CALL Logger.log(" 5. Number of readings outside safe range")
-        CALL Logger.log(" 6. Percentage of readings outside safe range")
-        CALL Logger.log(" 7. All statistics")
+        CALL Logger.log("Stats for " + contextLabel)
+        CALL Logger.log("1. total readings")
+        CALL Logger.log("2. average value")
+        CALL Logger.log("3. minimum value")
+        CALL Logger.log("4. maximum value")
+        CALL Logger.log("5. number outside safe range")
+        CALL Logger.log("6. percent outside safe range")
+        CALL Logger.log("7. all of the above")
 
-        DECLARE INTEGER: userChoice = CALL readIntegerInRange("enter choice: ", 1, 7)
+        DECLARE INTEGER userChoice = CALL readIntegerInRange("stat: ", 1, 7)
+        CALL Logger.logBlank()
 
         IF userChoice EQUALS 1 THEN
-            CALL Logger.log("Total: " + filteredReadings.totalReadings())
+            CALL Logger.log("Total: " + Math.totalReadings(filteredReadings))
         ELSE IF userChoice EQUALS 2 THEN
-            CALL Logger.log("Average: " + filteredReadings.average())
+            CALL Logger.log("Average: " + Math.average(filteredReadings))
         ELSE IF userChoice EQUALS 3 THEN
-            CALL Logger.log("Minimum: " + filteredReadings.minimum())
+            CALL Logger.log("Minimum: " + Math.minimum(filteredReadings))
         ELSE IF userChoice EQUALS 4 THEN
-            CALL Logger.log("Maximum: " + filteredReadings.maximum())
+            CALL Logger.log("Maximum: " + Math.maximum(filteredReadings))
         ELSE IF userChoice EQUALS 5 THEN
-            CALL Logger.log("Out of range: " + filteredReadings.outOfRangeCount())
+            CALL Logger.log("Number outside safe range: " + Math.outOfRangeCount(filteredReadings))
         ELSE IF userChoice EQUALS 6 THEN
-            CALL Logger.log("Out of range %: " + filteredReadings.outOfRangePercent())
+            CALL Logger.log("Percent outside safe range: " + Math.outOfRangePercent(filteredReadings))
         ELSE IF userChoice EQUALS 7 THEN
-            CALL Logger.log("Total: " + filteredReadings.totalReadings())
-            CALL Logger.log("Average: " + filteredReadings.average())
-            CALL Logger.log("Minimum: " + filteredReadings.minimum())
-            CALL Logger.log("Maximum: " + filteredReadings.maximum())
-            CALL Logger.log("Out of range: " + filteredReadings.outOfRangeCount())
-            CALL Logger.log("Out of range %: " + filteredReadings.outOfRangePercent())
+            CALL Logger.log("Total: " + Math.totalReadings(filteredReadings))
+            CALL Logger.log("Average: " + Math.average(filteredReadings))
+            CALL Logger.log("Minimum: " + Math.minimum(filteredReadings))
+            CALL Logger.log("Maximum: " + Math.maximum(filteredReadings))
+            CALL Logger.log("Number outside safe range: " + Math.outOfRangeCount(filteredReadings))
+            CALL Logger.log("Percent outside safe range: " + Math.outOfRangePercent(filteredReadings))
         END IF
-    END METHOD showStatsSubMenu()
+    END METHOD
 
 
-    PRIVATE METHOD readLineFromConsole(STRING promptToShow) RETURN STRING
-        PRINT promptToShow (no newline)
-        DECLARE STRING: trimmedInputLine = ""
+    PRIVATE METHOD readLineFromConsole(STRING promptToShow) RETURNS STRING
+        PRINT promptToShow WITHOUT NEW LINE
+
         TRY
-            DECLARE STRING: rawInputLine = READ LINE FROM consoleInputReader
+            DECLARE STRING rawInputLine = READ LINE FROM consoleInputReader
             IF rawInputLine EQUALS NULL THEN
-                trimmedInputLine = ""
+                RETURN ""
             ELSE
-                trimmedInputLine = rawInputLine.trim()
+                RETURN rawInputLine.trim()
             END IF
-        CATCH IOException inputError
-            trimmedInputLine = ""
+        CATCH IOException
+            RETURN ""
         END TRY
-        RETURN trimmedInputLine
-    END METHOD readLineFromConsole()
+    END METHOD
 
 
-    PRIVATE METHOD readIntegerInRange(STRING promptToShow, INTEGER minimumAllowedValue, INTEGER maximumAllowedValue) RETURN INTEGER
-        DECLARE INTEGER: validatedInteger = 0
-        DECLARE BOOLEAN: inputAccepted    = FALSE
+    PRIVATE METHOD readIntegerInRange(STRING promptToShow, INTEGER minimumAllowedValue, INTEGER maximumAllowedValue) RETURNS INTEGER
+        DECLARE INTEGER validatedInteger = 0
+        DECLARE BOOLEAN inputAccepted = FALSE
+
         WHILE inputAccepted EQUALS FALSE
-            DECLARE STRING: userInputString = CALL readLineFromConsole(promptToShow)
+            DECLARE STRING userInputString = CALL readLineFromConsole(promptToShow)
+
             IF Validator.isInteger(userInputString) EQUALS TRUE THEN
-                DECLARE INTEGER: parsedInteger = PARSE userInputString TO INTEGER
+                DECLARE INTEGER parsedInteger = PARSE userInputString AS INTEGER
+
                 IF parsedInteger >= minimumAllowedValue AND parsedInteger <= maximumAllowedValue THEN
-                    validatedInteger = parsedInteger
-                    inputAccepted    = TRUE
+                    SET validatedInteger = parsedInteger
+                    SET inputAccepted = TRUE
                 ELSE
-                    CALL Logger.log("Please enter an integer between " + minimumAllowedValue + " and " + maximumAllowedValue + ".")
+                    CALL Logger.log("Enter a number between " + minimumAllowedValue + " and " + maximumAllowedValue + ".")
                 END IF
             ELSE
-                CALL Logger.log("Please enter an integer between " + minimumAllowedValue + " and " + maximumAllowedValue + ".")
+                CALL Logger.log("Enter a number between " + minimumAllowedValue + " and " + maximumAllowedValue + ".")
             END IF
         END WHILE
+
         RETURN validatedInteger
-    END METHOD readIntegerInRange()
+    END METHOD
 
 
-    PRIVATE METHOD readDoubleNumber(STRING promptToShow) RETURN DOUBLE
-        DECLARE DOUBLE:  validatedDouble = 0.0
-        DECLARE BOOLEAN: inputAccepted   = FALSE
+    PRIVATE METHOD readDoubleNumber(STRING promptToShow) RETURNS DOUBLE
+        DECLARE DOUBLE validatedDouble = 0.0
+        DECLARE BOOLEAN inputAccepted = FALSE
+
         WHILE inputAccepted EQUALS FALSE
-            DECLARE STRING: userInputString = CALL readLineFromConsole(promptToShow)
+            DECLARE STRING userInputString = CALL readLineFromConsole(promptToShow)
+
             IF Validator.isNumeric(userInputString) EQUALS TRUE THEN
-                validatedDouble = PARSE userInputString TO DOUBLE
-                inputAccepted   = TRUE
+                SET validatedDouble = PARSE userInputString AS DOUBLE
+                SET inputAccepted = TRUE
             ELSE
-                CALL Logger.log("Please enter a number.")
+                CALL Logger.log("Enter a number.")
             END IF
         END WHILE
+
         RETURN validatedDouble
-    END METHOD readDoubleNumber()
+    END METHOD
 
 
-    PRIVATE METHOD readNonEmptyString(STRING promptToShow) RETURN STRING
-        DECLARE STRING:  validatedString = ""
-        DECLARE BOOLEAN: inputAccepted   = FALSE
+    PRIVATE METHOD readNonEmptyString(STRING promptToShow) RETURNS STRING
+        DECLARE STRING validatedString = ""
+        DECLARE BOOLEAN inputAccepted = FALSE
+
         WHILE inputAccepted EQUALS FALSE
-            DECLARE STRING: userInputString = CALL readLineFromConsole(promptToShow)
+            DECLARE STRING userInputString = CALL readLineFromConsole(promptToShow)
+
             IF userInputString.length() > 0 THEN
-                validatedString = userInputString
-                inputAccepted   = TRUE
+                SET validatedString = userInputString
+                SET inputAccepted = TRUE
             ELSE
-                CALL Logger.log("Value cannot be empty.")
+                CALL Logger.log("This cannot be empty.")
             END IF
         END WHILE
+
         RETURN validatedString
-    END METHOD readNonEmptyString()
+    END METHOD
 
-
-    PRIVATE METHOD readValidSensorType() RETURN STRING
-        DECLARE STRING:  validatedSensorType = ""
-        DECLARE BOOLEAN: inputAccepted       = FALSE
-        WHILE inputAccepted EQUALS FALSE
-            DECLARE STRING: userInputString = CALL readLineFromConsole("sensor type (temperature/humidity/soilMoisture/light): ")
-            IF Validator.isValidSensorType(userInputString) EQUALS TRUE THEN
-                validatedSensorType = userInputString
-                inputAccepted       = TRUE
-            ELSE
-                CALL Logger.log("Invalid sensor type.")
-            END IF
-        END WHILE
-        RETURN validatedSensorType
-    END METHOD readValidSensorType()
-
-END CLASS Menu
+END CLASS
