@@ -1,0 +1,368 @@
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Available sensor types
+1. temperature
+2. humidity
+3. soilMoisture
+4. light
+
+Stats for type humidity
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Maximum: 61.2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Available zones
+1. ZoneA
+2. ZoneB
+3. ZoneC
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Select zone
+1. Zone A
+2. Zone B
+3. Zone C
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+starting session...
+
+
+Main menu
+Main menu
+1. overall statistics
+1. overall statistics
+2. stats by zone
+2. stats by zone
+3. stats by sensor type
+3. stats by sensor type
+4. add a reading
+4. add a reading
+5. delete a reading
+5. delete a reading
+6. exit
+6. exit
+
+Available sensor types
+
+Select zone
+1. Zone A
+2. Zone B
+3. Zone C
+
+Stats for zone ZoneA
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 2
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+1. temperature
+ending session
+
+2. humidity
+3. soilMoisture
+4. light
+
+Stats for type temperature
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 1
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Add new reading
+
+Select sensor type
+1. temperature
+2. humidity
+3. soilMoisture
+4. light
+
+Select zone
+1. ZoneA
+2. ZoneB
+3. ZoneC
+Added: [05/05/2003 11:33] LGT901 (temperature, ZoneA): 44.5
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+ending session
+
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Stats for entire greenhouse
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Percent outside safe range: 0.0
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Stats for entire greenhouse
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Number outside safe range: 0
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Stats for entire greenhouse
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 4
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Add new reading
+
+Select sensor type
+1. temperature
+2. humidity
+3. soilMoisture
+4. light
+
+Select zone
+1. ZoneA
+2. ZoneB
+3. ZoneC
+Added: [05/06/2023 15:32] JAS116 (temperature, ZoneB): 55.5
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Select zone
+1. ZoneA
+2. ZoneB
+3. ZoneC
+
+Stats for zone ZoneC
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Minimum: 880.0
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+starting session...
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
+
+Stats for entire greenhouse
+1. total readings
+2. average value
+3. minimum value
+4. maximum value
+5. number outside safe range
+6. percent outside safe range
+7. all of the above
+
+Total: 5
+
+Main menu
+1. overall statistics
+2. stats by zone
+3. stats by sensor type
+4. add a reading
+5. delete a reading
+6. exit
