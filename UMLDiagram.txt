@@ -1,0 +1,170 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Main {
+  - {static} CSV_FILE : String
+  + {static} main(args : String[]) : void
+}
+
+class Menu {
+  - consoleInputReader : BufferedReader
+  - loadedReadings : SensorArray
+  - csvFilename : String
+
+  + Menu(loadedReadings : SensorArray, csvFilename : String)
+  + run() : void
+  - showMainMenu() : void
+  - handleOverallStats() : void
+  - handleStatsByZone() : void
+  - readValidZone() : String
+  - handleStatsByType() : void
+  - readValidSensorType() : String
+  - handleAddReading() : void
+  - handleDeleteReading() : void
+  - showStatsSubMenu(filteredReadings : SensorArray, contextLabel : String) : void
+  - readLineFromConsole(promptToShow : String) : String
+  - readIntegerInRange(promptToShow : String, minimumAllowedValue : int, maximumAllowedValue : int) : int
+  - readDoubleNumber(promptToShow : String) : double
+  - readNonEmptyString(promptToShow : String) : String
+}
+
+class GreenhouseDataStorage {
+  + {static} loadCSV(csvFilename : String) : SensorArray
+  + {static} saveCSV(csvFilename : String, readingsToSave : SensorArray) : void
+  - {static} parseLine(csvLine : String) : SensorReading
+}
+
+class SensorArray {
+  - {static} INITIAL_CAPACITY : int
+  - {static} CAPACITY_GROWTH_FACTOR : int
+  - readings : SensorReading[]
+  - numberOfReadings : int
+
+  + SensorArray()
+  + add(newReading : SensorReading) : void
+  + deleteAt(indexToDelete : int) : void
+  + get(indexToFetch : int) : SensorReading
+  + getCount() : int
+  + hasSensorID(sensorIDToFind : String) : boolean
+  + filterByZone(zoneToMatch : String) : SensorArray
+  + filterBySensorType(typeToMatch : String) : SensorArray
+  - growArray() : void
+}
+
+class SensorReading {
+  - sensorID : String
+  - sensorType : String
+  - zone : String
+  - value : double
+  - timestamp : Timestamp
+
+  + SensorReading()
+  + SensorReading(sensorID : String, sensorType : String, zone : String, value : double, timestamp : Timestamp)
+  + SensorReading(sourceReading : SensorReading)
+  + getSensorID() : String
+  + getSensorType() : String
+  + getZone() : String
+  + getValue() : double
+  + getTimestamp() : Timestamp
+  + setSensorID(sensorID : String) : void
+  + setSensorType(sensorType : String) : void
+  + setZone(zone : String) : void
+  + setValue(value : double) : void
+  + setTimestamp(timestamp : Timestamp) : void
+  - {static} getSafeRange(sensorTypeToLookUp : String) : double[]
+  + isOutOfRange() : boolean
+  + toString() : String
+}
+
+class Timestamp {
+  - dayOfMonth : int
+  - monthOfYear : int
+  - year : int
+  - hour : int
+  - minute : int
+
+  + Timestamp()
+  + Timestamp(dayOfMonth : int, monthOfYear : int, year : int, hour : int, minute : int)
+  + Timestamp(sourceTimestamp : Timestamp)
+  + getDayOfMonth() : int
+  + getMonthOfYear() : int
+  + getYear() : int
+  + getHour() : int
+  + getMinute() : int
+  + setDayOfMonth(dayOfMonth : int) : void
+  + setMonthOfYear(monthOfYear : int) : void
+  + setYear(year : int) : void
+  + setHour(hour : int) : void
+  + setMinute(minute : int) : void
+  + toString() : String
+  - padWithLeadingZero(numberToPad : int) : String
+}
+
+class Math {
+  + {static} totalReadings(readingsToUse : SensorArray) : int
+  + {static} average(readingsToUse : SensorArray) : double
+  + {static} minimum(readingsToUse : SensorArray) : double
+  + {static} maximum(readingsToUse : SensorArray) : double
+  + {static} outOfRangeCount(readingsToUse : SensorArray) : int
+  + {static} outOfRangePercent(readingsToUse : SensorArray) : double
+}
+
+class Validator {
+  - {static} VALID_SENSOR_TYPES : String[]
+  - {static} MIN_DAY : int
+  - {static} MAX_DAY : int
+  - {static} MIN_MONTH : int
+  - {static} MAX_MONTH : int
+  - {static} MIN_YEAR : int
+  - {static} MAX_YEAR : int
+  - {static} MIN_HOUR : int
+  - {static} MAX_HOUR : int
+  - {static} MIN_MINUTE : int
+  - {static} MAX_MINUTE : int
+
+  + {static} isValidSensorType(sensorTypeToValidate : String) : boolean
+  + {static} isValidZone(zoneToValidate : String) : boolean
+  + {static} isValidSensorID(sensorIdToValidate : String) : boolean
+  + {static} isValidDay(dayToValidate : int) : boolean
+  + {static} isValidMonth(monthToValidate : int) : boolean
+  + {static} isValidYear(yearToValidate : int) : boolean
+  + {static} isValidHour(hourToValidate : int) : boolean
+  + {static} isValidMinute(minuteToValidate : int) : boolean
+  + {static} isNumeric(stringToCheck : String) : boolean
+  + {static} isInteger(stringToCheck : String) : boolean
+}
+
+class Logger {
+  - {static} LOG_FILE_NAME : String
+  - {static} logFileWriter : BufferedWriter
+
+  + {static} open() : void
+  + {static} log(messageToLog : String) : void
+  + {static} logBlank() : void
+  + {static} close() : void
+}
+
+Main ..> Logger
+Main ..> GreenhouseDataStorage
+Main ..> Menu
+
+Menu --> SensorArray : loadedReadings
+Menu ..> Logger
+Menu ..> GreenhouseDataStorage : saveCSV()
+Menu ..> Math
+Menu ..> SensorReading
+Menu ..> Timestamp
+Menu ..> Validator
+
+GreenhouseDataStorage ..> SensorArray
+GreenhouseDataStorage ..> SensorReading
+GreenhouseDataStorage ..> Timestamp
+GreenhouseDataStorage ..> Validator
+
+SensorArray *-- "0..*" SensorReading
+SensorReading *-- Timestamp
+
+Math ..> SensorArray
+Math ..> SensorReading
+
+@enduml
